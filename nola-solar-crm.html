@@ -209,7 +209,7 @@ textarea.fi{min-height:80px;resize:vertical}
 .inv-pg-header-left .inv-from{font-size:12px;color:#333;line-height:1.7;font-weight:600}
 .inv-pg-header-left .inv-from span{font-weight:400;color:#555;display:block}
 .inv-pg-header-right{text-align:right}
-.inv-pg-header-right .inv-word{font-size:38px;font-weight:900;color:#1a3a6e;letter-spacing:.04em;line-height:1;margin-bottom:6px}
+.inv-pg-header-right .inv-word{font-size:28px;font-weight:900;color:#1a3a6e;letter-spacing:.04em;line-height:1;margin-bottom:6px}
 .inv-pg-header-right .inv-number{font-size:14px;font-weight:600;color:#555;margin-bottom:14px}
 .inv-pg-header-right .inv-dates{display:flex;flex-direction:column;gap:4px;align-items:flex-end}
 .inv-pg-header-right .inv-date-row{display:flex;gap:12px;font-size:12px}
@@ -994,19 +994,19 @@ function buildInvHTML(inv){
           const qty=parseFloat(i.qty)||1;
           const price=parseFloat(i.price||0);
           const amt=parseFloat(i.amount||0);
-          return`<tr><td>${i.desc}</td><td>${qty}</td><td>$${price.toFixed(2)}</td><td>$${amt.toFixed(2)}</td></tr>`;
+          return`<tr><td>${i.desc}</td><td>${qty}</td><td>$${price.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}</td><td>$${amt.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}</td></tr>`;
         }).join('')}</tbody>
       </table>
     </div>
     <div class="inv-bottom">
       <div class="inv-notes">
         <div class="inv-notes-lbl">Notes / Terms</div>
-        <div class="inv-notes-text">Thank you for your business!</div>
+        <div class="inv-notes-text">Thank you for choosing Nola Solar Energy.<br>We appreciate your business.</div>
       </div>
       <div class="inv-totals-block">
-        <div class="inv-totals-line"><span>Subtotal</span><span class="inv-tval">$${subtotal.toFixed(2)}</span></div>
-        ${inv.taxOn?`<div class="inv-totals-line"><span>Tax (${taxRate}%)</span><span class="inv-tval">$${taxAmt.toFixed(2)}</span></div>`:''}
-        <div class="inv-totals-line"><span>Total</span><span class="inv-tval">$${total.toFixed(2)}</span></div>
+        <div class="inv-totals-line"><span>Subtotal</span><span class="inv-tval">$${subtotal.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}</span></div>
+        ${inv.taxOn?`<div class="inv-totals-line"><span>Tax (${taxRate}%)</span><span class="inv-tval">$${taxAmt.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}</span></div>`:''}
+        <div class="inv-totals-line"><span>Total</span><span class="inv-tval">$${total.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}</span></div>
       </div>
     </div>
     <div class="inv-footer">
@@ -1125,7 +1125,7 @@ function printInvoice(){
     .inv-pg-header-left .inv-from{font-size:12px;color:#333;line-height:1.7;font-weight:600}
     .inv-pg-header-left .inv-from span{font-weight:400;color:#555;display:block}
     .inv-pg-header-right{text-align:right}
-    .inv-pg-header-right .inv-word{font-size:42px;font-weight:900;color:#1a3a6e;letter-spacing:.04em;line-height:1;margin-bottom:6px}
+    .inv-pg-header-right .inv-word{font-size:28px;font-weight:900;color:#1a3a6e;letter-spacing:.04em;line-height:1;margin-bottom:6px}
     .inv-pg-header-right .inv-number{font-size:14px;font-weight:600;color:#555;margin-bottom:14px}
     .inv-date-row{display:flex;gap:12px;justify-content:flex-end;font-size:12px;margin-bottom:3px}
     .inv-date-lbl{color:#888;min-width:76px;text-align:right}
