@@ -57,7 +57,7 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFo
 .ibtn.add{background:#fff;border-color:#fff;color:var(--orange);font-size:22px;box-shadow:0 2px 8px rgba(0,0,0,.15)}
 
 /* BOTTOM TABS */
-.tabs{display:flex;border-top:1px solid var(--border);background:var(--bg);flex-shrink:0;box-shadow:0 -2px 8px rgba(0,0,0,.05)}
+.tabs{display:flex;border-top:1px solid var(--border);background:var(--bg);flex-shrink:0;box-shadow:0 -2px 8px rgba(0,0,0,.05);padding-bottom:env(safe-area-inset-bottom,8px)}
 .tab{flex:1;padding:10px 4px 9px;text-align:center;cursor:pointer;border:none;background:transparent;font-family:inherit;color:var(--text2);font-size:10px;font-weight:600}
 .tab .ticon{font-size:22px;display:block;margin-bottom:2px}
 .tab.on{color:var(--orange)}
@@ -441,6 +441,13 @@ textarea.fi{min-height:80px;resize:vertical}
 
 <!-- ═══ DETAIL VIEW ═══ -->
 <div class="view" id="view-detail">
+  <div class="shdr">
+    <button class="bbtn" onclick="showList()">← Back</button>
+    <span class="shdr-t" id="det-name"></span>
+    <button class="bbtn" onclick="showEdit()">Edit</button>
+  </div>
+  <div class="dbody" id="dbody"></div>
+</div>
 
 <!-- ═══ NOTES VIEW ═══ -->
 <div class="view" id="view-notes">
@@ -491,13 +498,6 @@ textarea.fi{min-height:80px;resize:vertical}
       <div id="note-customer-results" style="display:none"></div>
     </div>
   </div>
-</div>
-  <div class="shdr">
-    <button class="bbtn" onclick="showList()">← Back</button>
-    <span class="shdr-t" id="det-name"></span>
-    <button class="bbtn" onclick="showEdit()">Edit</button>
-  </div>
-  <div class="dbody" id="dbody"></div>
 </div>
 
 <!-- ═══ CONTACT FORM ═══ -->
