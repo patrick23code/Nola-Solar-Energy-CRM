@@ -1068,9 +1068,9 @@ function renderInvList(){
   const all=Object.values(invoices).sort((a,b)=>parseInt(b.number)-parseInt(a.number));
   if(!all.length){el.innerHTML='<div class="empty">No invoices yet.<br><br>Tap + to create your first invoice.</div>';return;}
   const total=all.reduce((s,i)=>(i.lineItems||[]).reduce((ss,li)=>ss+(parseFloat(li.amount)||0),s),0);
-  document.getElementById('inv-hdrsub').textContent=all.length+' invoices • $'+total.toFixed(2)+' total';
+  document.getElementById('inv-hdrsub').textContent=all.length+' invoices • $'+total.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})+' total';
   el.innerHTML=all.map(inv=>{
-    const t=(inv.lineItems||[]).reduce((s,i)=>s+(parseFloat(i.amount)||0),0);
+    const t=(inv.total)||((inv.lineItems||[]).reduce((s,i)=>s+(parseFloat(i.amount)||0),0))+(inv.taxAmt||0);
     return`<div class="inv-card" onclick="previewSavedInv('${inv.id}')">
       <div class="inv-card-l">
         <div class="invnum">Receipt #${inv.number}</div>
@@ -1078,7 +1078,7 @@ function renderInvList(){
         <div class="invdate">${inv.date?new Date(inv.date+'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):''}</div>
       </div>
       <div class="inv-card-r">
-        <div class="invamt">$${t.toFixed(2)}</div>
+        <div class="invamt">$${t.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}</div>
         <div class="inv-status ${inv.status||'unpaid'}">${inv.status==='paid'?'PAID':'UNPAID'}</div>
       </div>
     </div>`;
