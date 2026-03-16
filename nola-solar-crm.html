@@ -631,6 +631,7 @@ let db=null,contacts={},photos={},invoices={},selCat='all',selId=null,editId=nul
 let invPickerTab='crm',invSelectedContact=null,lineItems=[],invEditId=null;
 let currentInvData=null;
 let LOGO_B64=''; // pre-loaded logo
+window.LOGO_B64='';
 
 async function preloadLogo(){
   try{
@@ -638,7 +639,8 @@ async function preloadLogo(){
     const buf=await resp.arrayBuffer();
     let bin='';new Uint8Array(buf).forEach(b=>bin+=String.fromCharCode(b));
     LOGO_B64='data:image/png;base64,'+btoa(bin);
-  }catch(e){LOGO_B64='';}
+    window.LOGO_B64=LOGO_B64;
+  }catch(e){LOGO_B64='';window.LOGO_B64='';}
 }
 
 /* ── Toast ── */
@@ -988,7 +990,7 @@ async function warmInvoiceLogo(){
 warmInvoiceLogo();
 
 function buildInvHTML(inv, logoSrc){
-  const src=logoSrc||cachedInvoiceLogoSrc||DEFAULT_LOGO_PATH;
+  const src=logoSrc||LOGO_B64||cachedInvoiceLogoSrc||DEFAULT_LOGO_PATH;
   const paid=inv.status==='paid';
   const items=inv.lineItems||[];
   const subtotal=inv.subtotal||items.reduce((s,i)=>s+(parseFloat(i.amount)||0),0);
@@ -999,7 +1001,7 @@ function buildInvHTML(inv, logoSrc){
   return`<div class="inv-preview-page">
     <div class="inv-pg-header">
       <div class="inv-pg-header-left">
-        <img class="inv-pg-logo" src="${src}" alt="Nola Solar Energy" onerror="this.nextElementSibling.style.display='block';this.style.display='none';"/>
+        <img class="inv-pg-logo" src="${src}" alt="Nola Solar Energy" onerror="if(window.LOGO_B64){this.src=window.LOGO_B64;return}this.nextElementSibling.style.display='block';this.style.display='none';"/>
         <div class="inv-pg-logo-fb">Nola Solar Energy</div>
         <div class="inv-from">
           Nola Solar Energy
@@ -1241,6 +1243,10 @@ async function shareInvoice(){
     async function inlineImage(img){
       const src=img.getAttribute('src');
       if(!src||src.startsWith('data:'))return;
+      if(img.classList.contains('inv-pg-logo')&&LOGO_B64){
+        img.setAttribute('src',LOGO_B64);
+        return;
+      }
       try{
         const response=await fetch(src,{mode:'cors'});
         const blob=await response.blob();
