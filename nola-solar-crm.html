@@ -609,7 +609,7 @@ textarea.fi{min-height:80px;resize:vertical}
   </div>
   <div class="inv-preview-body" id="inv-preview-body"></div>
   <div class="inv-action-bar">
-    <button class="inv-print-btn" style="flex:1" onclick="shareInvoice()">Share Receipt</button>
+    <button class="inv-print-btn" style="flex:1" onclick="shareInvoice()">Save PDF</button>
   </div>
 </div>
 
@@ -1274,17 +1274,17 @@ async function shareInvoice(){
     }
     const filename=`Receipt-${inv?.number||''}${inv?.clientName?'-'+inv.clientName.replace(/\s+/g,'-'):''}.pdf`;
     const pdfBlob=pdf.output('blob');
-    const pdfFile=new File([pdfBlob],filename,{type:'application/pdf'});
-    if(navigator.share&&navigator.canShare({files:[pdfFile]})){
-      await navigator.share({files:[pdfFile],title:`Receipt #${inv?.number||''}`,text:`Nola Solar Energy - Receipt for ${inv?.clientName||''}`});
-    } else {
-      const url=URL.createObjectURL(pdfBlob);
-      const a=document.createElement('a');a.href=url;a.download=filename;a.click();
-      setTimeout(()=>URL.revokeObjectURL(url),2000);
-      toast('PDF downloaded!');
-    }
+    const url=URL.createObjectURL(pdfBlob);
+    const a=document.createElement('a');
+    a.href=url;
+    a.download=filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(()=>URL.revokeObjectURL(url),3000);
+    toast('PDF saved!');
   }catch(e){toast('PDF error: '+e.message,4000);console.error(e);}
-  finally{if(btn){btn.textContent='Share Receipt';btn.disabled=false;}}
+  finally{if(btn){btn.textContent='Save PDF';btn.disabled=false;}}
 }
 /* ══════════════════════════════
    SCHEDULE SYSTEM
