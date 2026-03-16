@@ -965,7 +965,8 @@ function getInvClientInfo(){
   return{name:document.getElementById('inv-client-name').value.trim(),address:document.getElementById('inv-client-addr').value.trim()};
 }
 
-function buildInvHTML(inv){
+function buildInvHTML(inv, logoSrc){
+  const src=logoSrc||'https://nolasolarenergy.com/wp-content/uploads/2022/06/logotest.png';
   const paid=inv.status==='paid';
   const items=inv.lineItems||[];
   const subtotal=inv.subtotal||items.reduce((s,i)=>s+(parseFloat(i.amount)||0),0);
@@ -976,9 +977,7 @@ function buildInvHTML(inv){
   return`<div class="inv-preview-page">
     <div class="inv-pg-header">
       <div class="inv-pg-header-left">
-        ${LOGO_B64
-          ? `<img class="inv-pg-logo" src="${LOGO_B64}" alt="Nola Solar Energy"/>`
-          : `<div class="inv-pg-logo-fb">NOLA SOLAR ENERGY</div>`}
+        <img class="inv-pg-logo" src="${src}" alt="Nola Solar Energy"/>
         <div class="inv-from">
           Nola Solar Energy
           <span>2303 Governor Nicholls</span>
@@ -1178,24 +1177,24 @@ function printInvoice(){
 
 async function shareInvoice(){
   const btn=document.querySelector('.inv-print-btn');
-  if(btn){btn.textContent='Generating PDF...';btn.disabled=true;}
+  if(btn){btn.textContent='Saving PDF...';btn.disabled=true;}
   try{
     const inv=currentInvData;
-    // Ensure logo is loaded before building PDF
+    // Always fresh-fetch logo as base64 for PDF
     if(!LOGO_B64) await preloadLogo();
-    // Rebuild receipt HTML fresh so logo is always embedded
-    const freshHTML=buildInvHTML(inv);
+    // Build receipt HTML with base64 logo embedded
+    const freshHTML=buildInvHTML(inv, LOGO_B64||'https://nolasolarenergy.com/wp-content/uploads/2022/06/logotest.png');
     const printCSS=`
-      body{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;background:#fff;margin:0;padding:0}
+      *{box-sizing:border-box;margin:0;padding:0}
+      body{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;background:#fff}
       .inv-preview-page{background:#fff;width:680px;color:#111;position:relative}
       .inv-pg-header{padding:28px 36px 20px;display:flex;justify-content:space-between;align-items:flex-start}
-      .inv-pg-header-left .inv-pg-logo{height:52px;object-fit:contain;display:block;margin-bottom:12px}
-      .inv-pg-header-left .inv-pg-logo-fb{font-size:16px;font-weight:900;color:#1a3a6e;display:block;margin-bottom:12px}
+      .inv-pg-header-left .inv-pg-logo{height:64px;object-fit:contain;display:block;margin-bottom:12px}
       .inv-pg-header-left .inv-from{font-size:12px;color:#333;line-height:1.7;font-weight:600}
       .inv-pg-header-left .inv-from span{font-weight:400;color:#555;display:block}
       .inv-pg-header-right{text-align:right}
-      .inv-pg-header-right .inv-word{font-size:28px;font-weight:900;color:#1a3a6e;letter-spacing:.04em;line-height:1;margin-bottom:6px}
-      .inv-pg-header-right .inv-number{font-size:14px;font-weight:600;color:#555;margin-bottom:14px}
+      .inv-word{font-size:28px;font-weight:900;color:#1a3a6e;letter-spacing:.04em;line-height:1;margin-bottom:6px}
+      .inv-number{font-size:14px;font-weight:600;color:#555;margin-bottom:14px}
       .inv-date-row{display:flex;gap:12px;justify-content:flex-end;font-size:12px;margin-bottom:3px}
       .inv-date-lbl{color:#888;min-width:76px;text-align:right}
       .inv-date-val{color:#1a3a6e;font-weight:700}
@@ -1206,7 +1205,7 @@ async function shareInvoice(){
       .inv-billto-detail{font-size:12px;color:#555;line-height:1.6}
       .inv-items-wrap{padding:0 36px 12px;position:relative}
       .inv-paid-watermark{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-35deg);font-size:52px;font-weight:900;color:rgba(100,190,160,.18);letter-spacing:.15em;border:5px solid rgba(100,190,160,.18);padding:6px 18px;border-radius:8px;white-space:nowrap}
-      .inv-items-table{width:100%;border-collapse:collapse;border:1px solid #e8e8e8;overflow:hidden}
+      .inv-items-table{width:100%;border-collapse:collapse;border:1px solid #e8e8e8}
       .inv-items-table thead tr{background:#f4f6f9}
       .inv-items-table th{font-size:10px;font-weight:800;color:#6b9fd4;padding:10px 14px;text-align:left;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid #e8e8e8}
       .inv-items-table th:not(:first-child){text-align:center}
@@ -1227,7 +1226,6 @@ async function shareInvoice(){
       .inv-tc-lbl{font-size:10px;font-weight:800;color:#6b9fd4;text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:3px}
       .inv-tc-val{font-size:12px;color:#333;font-weight:600}
     `;
-
     const iframe=document.createElement('iframe');
     iframe.style.cssText='position:fixed;left:-9999px;top:0;width:680px;height:2000px;border:none;visibility:hidden';
     document.body.appendChild(iframe);
@@ -1235,8 +1233,7 @@ async function shareInvoice(){
     idoc.open();
     idoc.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><style>${printCSS}</style></head><body>${freshHTML}</body></html>`);
     idoc.close();
-
-    // Wait for images to load
+    // Wait for logo image to load
     await new Promise(r=>{
       const imgs=idoc.querySelectorAll('img');
       if(!imgs.length)return r();
@@ -1245,44 +1242,38 @@ async function shareInvoice(){
         if(img.complete){loaded++;if(loaded===imgs.length)r();}
         else{img.onload=img.onerror=()=>{loaded++;if(loaded===imgs.length)r();};}
       });
-      setTimeout(r,2000);
+      setTimeout(r,2500);
     });
-
     const pageEl=idoc.querySelector('.inv-preview-page')||idoc.body;
-    const canvas=await html2canvas(pageEl,{
-      scale:2,useCORS:true,allowTaint:true,
-      backgroundColor:'#ffffff',width:680,logging:false
-    });
+    const canvas=await html2canvas(pageEl,{scale:2,useCORS:true,allowTaint:true,backgroundColor:'#ffffff',width:680,logging:false});
     document.body.removeChild(iframe);
-
     const {jsPDF}=window.jspdf;
     const pdf=new jsPDF({orientation:'portrait',unit:'pt',format:'a4'});
     const a4w=595.28,a4h=841.89;
-    const imgW=canvas.width,imgH=canvas.height;
-    const ratio=a4w/imgW;
-    const pdfH=imgH*ratio;
+    const ratio=a4w/canvas.width;
+    const pdfH=canvas.height*ratio;
     const imgData=canvas.toDataURL('image/jpeg',0.95);
     if(pdfH<=a4h){
       pdf.addImage(imgData,'JPEG',0,0,a4w,pdfH);
     } else {
-      let yPos=0;
-      while(yPos<pdfH){
-        if(yPos>0)pdf.addPage();
-        pdf.addImage(imgData,'JPEG',0,-yPos,a4w,pdfH);
-        yPos+=a4h;
-      }
+      let y=0;
+      while(y<pdfH){if(y>0)pdf.addPage();pdf.addImage(imgData,'JPEG',0,-y,a4w,pdfH);y+=a4h;}
     }
     const filename=`Receipt-${inv?.number||''}${inv?.clientName?'-'+inv.clientName.replace(/\s+/g,'-'):''}.pdf`;
     const pdfBlob=pdf.output('blob');
-    const url=URL.createObjectURL(pdfBlob);
-    const a=document.createElement('a');
-    a.href=url;
-    a.download=filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    setTimeout(()=>URL.revokeObjectURL(url),3000);
-    toast('PDF saved!');
+    // iOS Safari: open in new tab so user can save from share sheet
+    const isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent);
+    if(isIOS){
+      const url=URL.createObjectURL(pdfBlob);
+      window.open(url,'_blank');
+      setTimeout(()=>URL.revokeObjectURL(url),10000);
+      toast('PDF opened — tap Share to save!');
+    } else {
+      const url=URL.createObjectURL(pdfBlob);
+      const a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();document.body.removeChild(a);
+      setTimeout(()=>URL.revokeObjectURL(url),3000);
+      toast('PDF saved!');
+    }
   }catch(e){toast('PDF error: '+e.message,4000);console.error(e);}
   finally{if(btn){btn.textContent='Save PDF';btn.disabled=false;}}
 }
