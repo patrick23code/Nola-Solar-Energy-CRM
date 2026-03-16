@@ -630,6 +630,16 @@ const HARDCODED_CFG={apiKey:'AIzaSyBdOfax4NY7PhyyFhpy7ItivkUID0ksMyo',databaseUR
 let db=null,contacts={},photos={},invoices={},selCat='all',selId=null,editId=null,fCat='residential';
 let invPickerTab='crm',invSelectedContact=null,lineItems=[],invEditId=null;
 let currentInvData=null;
+let LOGO_B64=''; // pre-loaded logo
+
+async function preloadLogo(){
+  try{
+    const resp=await fetch('https://nolasolarenergy.com/wp-content/uploads/2022/06/logotest.png');
+    const buf=await resp.arrayBuffer();
+    let bin='';new Uint8Array(buf).forEach(b=>bin+=String.fromCharCode(b));
+    LOGO_B64='data:image/png;base64,'+btoa(bin);
+  }catch(e){LOGO_B64='';}
+}
 
 /* ── Toast ── */
 function toast(m,d=2200){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),d);}
@@ -641,6 +651,7 @@ window.addEventListener('DOMContentLoaded',()=>{
   showV('view-list');sync();
   initJobs();
   initSchedJobGrid();
+  preloadLogo();
   // Select today by default
   const t=new Date();
   calSelDate=`${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`;
@@ -965,8 +976,9 @@ function buildInvHTML(inv){
   return`<div class="inv-preview-page">
     <div class="inv-pg-header">
       <div class="inv-pg-header-left">
-        <img class="inv-pg-logo" src="https://nolasolarenergy.com/wp-content/uploads/2022/06/logotest.png" onerror="this.style.display='none';this.nextElementSibling.style.display='block'" alt="Nola Solar Energy"/>
-        <div class="inv-pg-logo-fb">NOLA SOLAR ENERGY</div>
+        ${LOGO_B64
+          ? `<img class="inv-pg-logo" src="${LOGO_B64}" alt="Nola Solar Energy"/>`
+          : `<div class="inv-pg-logo-fb">NOLA SOLAR ENERGY</div>`}
         <div class="inv-from">
           Nola Solar Energy
           <span>2303 Governor Nicholls</span>
@@ -1169,19 +1181,11 @@ async function shareInvoice(){
   if(btn){btn.textContent='Generating PDF...';btn.disabled=true;}
   try{
     const inv=currentInvData;
-
-    // Pre-load logo as base64 to embed in PDF
-    let logoBase64='';
-    try{
-      const resp=await fetch('https://nolasolarenergy.com/wp-content/uploads/2022/06/logotest.png');
-      const arrBuf=await resp.arrayBuffer();
-      const bytes=new Uint8Array(arrBuf);
-      let binary='';bytes.forEach(b=>binary+=String.fromCharCode(b));
-      logoBase64='data:image/png;base64,'+btoa(binary);
-    }catch(e){logoBase64='';}
-
+    // Ensure logo is loaded before building PDF
+    if(!LOGO_B64) await preloadLogo();
+    // Rebuild receipt HTML fresh so logo is always embedded
+    const freshHTML=buildInvHTML(inv);
     const printCSS=`
-      *{box-sizing:border-box;margin:0;padding:0}
       body{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;background:#fff;margin:0;padding:0}
       .inv-preview-page{background:#fff;width:680px;color:#111;position:relative}
       .inv-pg-header{padding:28px 36px 20px;display:flex;justify-content:space-between;align-items:flex-start}
@@ -1224,22 +1228,12 @@ async function shareInvoice(){
       .inv-tc-val{font-size:12px;color:#333;font-weight:600}
     `;
 
-    // Get receipt HTML and replace img src with base64
-    let content=document.getElementById('inv-preview-body').innerHTML;
-    if(logoBase64){
-      content=content.replace(/src="https:\/\/nolasolarenergy\.com\/wp-content\/uploads\/2022\/06\/logotest\.png"/g,`src="${logoBase64}"`);
-    } else {
-      // Fallback: hide broken img, show text fallback
-      content=content.replace(/<img class="inv-pg-logo"[^>]*>/g,'');
-      content=content.replace(/style="display:none">NOLA SOLAR ENERGY/,'style="display:block;font-size:16px;font-weight:900;color:#1a3a6e;margin-bottom:12px">NOLA SOLAR ENERGY');
-    }
-
     const iframe=document.createElement('iframe');
     iframe.style.cssText='position:fixed;left:-9999px;top:0;width:680px;height:2000px;border:none;visibility:hidden';
     document.body.appendChild(iframe);
     const idoc=iframe.contentDocument||iframe.contentWindow.document;
     idoc.open();
-    idoc.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><style>${printCSS}</style></head><body>${content}</body></html>`);
+    idoc.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><style>${printCSS}</style></head><body>${freshHTML}</body></html>`);
     idoc.close();
 
     // Wait for images to load
