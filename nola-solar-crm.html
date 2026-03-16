@@ -966,7 +966,7 @@ function getInvClientInfo(){
 }
 
 function buildInvHTML(inv, logoSrc){
-  const src=logoSrc||'https://nolasolarenergy.com/wp-content/uploads/2022/06/logotest.png';
+  const src=logoSrc||'/logo.png';
   const paid=inv.status==='paid';
   const items=inv.lineItems||[];
   const subtotal=inv.subtotal||items.reduce((s,i)=>s+(parseFloat(i.amount)||0),0);
@@ -1064,6 +1064,7 @@ function saveInvoice(){
   const saveBtn=document.querySelector('#view-invpreview .shdr .bbtn+span+button');
   if(saveBtn){saveBtn.textContent='Save';saveBtn.onclick=saveInvoiceFinal;saveBtn.style.background='';saveBtn.style.color='';saveBtn.style.border='';}
   showV('view-invpreview');
+  syncPdfActionButton();
 }
 
 async function saveInvoiceFinal(){
@@ -1109,6 +1110,7 @@ function previewSavedInv(id){
   document.querySelector('#view-invpreview .shdr .bbtn+span+button').style.color='var(--red-txt)';
   document.querySelector('#view-invpreview .shdr .bbtn+span+button').style.border='1.5px solid var(--red-txt)';
   showV('view-invpreview');
+  syncPdfActionButton();
 }
 
 async function deleteInvoice(id){
@@ -1175,105 +1177,156 @@ function printInvoice(){
   setTimeout(()=>w.print(),600);
 }
 
+function getPdfActionLabel(){
+  const isSafari=/^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+  return isSafari?'Open PDF':'Save PDF';
+}
+
+function syncPdfActionButton(){
+  const btn=document.querySelector('.inv-print-btn');
+  if(btn&&!btn.disabled)btn.textContent=getPdfActionLabel();
+}
+
 async function shareInvoice(){
   const btn=document.querySelector('.inv-print-btn');
   if(btn){btn.textContent='Saving PDF...';btn.disabled=true;}
   try{
     const inv=currentInvData;
+    const isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent);
+    const isSafari=/^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+    if(!inv){throw new Error('Invoice data not found');}
+    const sourcePage=document.querySelector('#inv-preview-body .inv-preview-page');
+    if(!sourcePage){throw new Error('Invoice preview not found');}
 
-    // Step 1: fetch logo as base64 — guarantees it renders in canvas
-    let logoB64='';
-    try{
-      const r=await fetch('https://nolasolarenergy.com/wp-content/uploads/2022/06/logotest.png',{mode:'cors'});
-      const buf=await r.arrayBuffer();
-      let bin='';new Uint8Array(buf).forEach(b=>bin+=String.fromCharCode(b));
-      logoB64='data:image/png;base64,'+btoa(bin);
-    }catch(e){logoB64='';}
-
-    // Step 2: build receipt HTML with b64 logo inline
-    const html=buildInvHTML(inv,logoB64);
-
-    // Step 3: draw to canvas via hidden div (not iframe — avoids CORS issues)
+    const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+    const cssText=Array.from(document.querySelectorAll('style')).map(s=>s.textContent).join('\n');
     const wrap=document.createElement('div');
-    wrap.style.cssText='position:fixed;left:-9999px;top:0;width:680px;background:#fff;z-index:-1';
-    wrap.innerHTML=`<style>
-      *{box-sizing:border-box;margin:0;padding:0}
-      body{font-family:Helvetica,Arial,sans-serif}
-      .inv-preview-page{background:#fff;width:680px;color:#111;position:relative}
-      .inv-pg-header{padding:28px 36px 20px;display:flex;justify-content:space-between;align-items:flex-start}
-      .inv-pg-header-left .inv-pg-logo{height:64px;object-fit:contain;display:block;margin-bottom:12px}
-      .inv-pg-header-left .inv-from{font-size:12px;color:#333;line-height:1.7;font-weight:600}
-      .inv-pg-header-left .inv-from span{font-weight:400;color:#555;display:block}
-      .inv-pg-header-right{text-align:right}
-      .inv-word{font-size:28px;font-weight:900;color:#1a3a6e;letter-spacing:.04em;line-height:1;margin-bottom:6px}
-      .inv-number{font-size:14px;font-weight:600;color:#555;margin-bottom:14px}
-      .inv-date-row{display:flex;gap:12px;justify-content:flex-end;font-size:12px;margin-bottom:3px}
-      .inv-date-lbl{color:#888;min-width:76px;text-align:right}
-      .inv-date-val{color:#1a3a6e;font-weight:700}
-      .inv-divider{height:1px;background:#e0e0e0;margin:0 36px}
-      .inv-billto{padding:18px 36px 14px}
-      .inv-billto-lbl{font-size:10px;font-weight:800;color:#6b9fd4;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}
-      .inv-billto-name{font-size:15px;font-weight:700;color:#111;margin-bottom:3px}
-      .inv-billto-detail{font-size:12px;color:#555;line-height:1.6}
-      .inv-items-wrap{padding:0 36px 12px;position:relative}
-      .inv-paid-watermark{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-35deg);font-size:52px;font-weight:900;color:rgba(100,190,160,.18);letter-spacing:.15em;border:5px solid rgba(100,190,160,.18);padding:6px 18px;border-radius:8px;white-space:nowrap}
-      .inv-items-table{width:100%;border-collapse:collapse;border:1px solid #e8e8e8}
-      .inv-items-table thead tr{background:#f4f6f9}
-      .inv-items-table th{font-size:10px;font-weight:800;color:#6b9fd4;padding:10px 14px;text-align:left;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid #e8e8e8}
-      .inv-items-table th:not(:first-child){text-align:center}
-      .inv-items-table th:last-child{text-align:right}
-      .inv-items-table td{padding:12px 14px;font-size:13px;color:#333;border-bottom:1px solid #f0f0f0;vertical-align:middle}
-      .inv-items-table td:not(:first-child){text-align:center;color:#555}
-      .inv-items-table td:last-child{text-align:right;font-weight:600;color:#333}
-      .inv-items-table tbody tr:last-child td{border-bottom:none}
-      .inv-bottom{padding:12px 36px 24px;display:flex;justify-content:space-between;align-items:flex-start;gap:16px}
-      .inv-notes{flex:1}.inv-notes-lbl{font-size:10px;font-weight:800;color:#6b9fd4;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}
-      .inv-notes-text{font-size:12px;color:#555;line-height:1.6}
-      .inv-totals-block{min-width:200px}
-      .inv-totals-line{display:flex;justify-content:space-between;gap:24px;padding:5px 0;font-size:13px;color:#555;border-bottom:1px solid #f0f0f0}
-      .inv-totals-line:last-child{border-bottom:none;border-top:1px solid #ddd;margin-top:4px;padding-top:8px;font-size:15px;font-weight:800}
-      .inv-totals-line:last-child .inv-tval{color:#F5A623;font-size:17px;font-weight:900}
-      .inv-footer{padding:14px 36px;border-top:1px solid #eee;display:flex;justify-content:flex-end}
-      .inv-tc-lbl{font-size:10px;font-weight:800;color:#6b9fd4;text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:3px}
-      .inv-tc-val{font-size:12px;color:#333;font-weight:600}
-    </style>${html}`;
-    document.body.appendChild(wrap);
-    await new Promise(r=>setTimeout(r,300));
+    wrap.style.cssText='position:fixed;left:-10000px;top:0;background:#ffffff;z-index:-1;padding:0;margin:0;';
 
-    const pageEl=wrap.querySelector('.inv-preview-page')||wrap;
-    const canvas=await html2canvas(pageEl,{
-      scale:2,useCORS:false,allowTaint:true,
-      backgroundColor:'#ffffff',width:680,logging:false
+    const clone=sourcePage.cloneNode(true);
+    const sourceRect=sourcePage.getBoundingClientRect();
+    const targetWidth=Math.max(Math.ceil(sourceRect.width||680),680);
+    clone.style.width=targetWidth+'px';
+    clone.style.maxWidth='none';
+    clone.style.margin='0';
+    clone.style.borderRadius='0';
+    clone.style.boxShadow='none';
+    wrap.innerHTML=`<style>${cssText}</style>`;
+    wrap.appendChild(clone);
+    document.body.appendChild(wrap);
+
+    async function inlineImage(img){
+      const src=img.getAttribute('src');
+      if(!src||src.startsWith('data:'))return;
+      try{
+        const response=await fetch(src,{mode:'cors'});
+        const blob=await response.blob();
+        const dataUrl=await new Promise((resolve,reject)=>{
+          const reader=new FileReader();
+          reader.onloadend=()=>resolve(reader.result);
+          reader.onerror=reject;
+          reader.readAsDataURL(blob);
+        });
+        img.setAttribute('src',dataUrl);
+      }catch(e){
+        img.setAttribute('crossorigin','anonymous');
+      }
+    }
+
+    async function waitForImages(scope){
+      const images=Array.from(scope.querySelectorAll('img'));
+      await Promise.all(images.map(async img=>{
+        await inlineImage(img);
+        if(img.complete&&img.naturalWidth>0)return;
+        await new Promise(resolve=>{
+          const done=()=>resolve();
+          img.addEventListener('load',done,{once:true});
+          img.addEventListener('error',done,{once:true});
+        });
+      }));
+    }
+
+    await waitForImages(clone);
+    await wait(150);
+
+    const canvas=await html2canvas(clone,{
+      scale:Math.max(2,Math.min(3,window.devicePixelRatio||1)),
+      useCORS:true,
+      allowTaint:false,
+      backgroundColor:'#ffffff',
+      logging:false,
+      scrollX:0,
+      scrollY:0,
+      width:clone.scrollWidth,
+      height:clone.scrollHeight,
+      windowWidth:clone.scrollWidth,
+      windowHeight:clone.scrollHeight
     });
     document.body.removeChild(wrap);
 
-    // Step 4: build PDF
     const {jsPDF}=window.jspdf;
     const pdf=new jsPDF({orientation:'portrait',unit:'pt',format:'a4'});
     const a4w=595.28,a4h=841.89;
     const ratio=a4w/canvas.width;
     const pdfH=canvas.height*ratio;
-    const imgData=canvas.toDataURL('image/jpeg',0.95);
-    if(pdfH<=a4h){pdf.addImage(imgData,'JPEG',0,0,a4w,pdfH);}
-    else{let y=0;while(y<pdfH){if(y>0)pdf.addPage();pdf.addImage(imgData,'JPEG',0,-y,a4w,pdfH);y+=a4h;}}
+    const imgData=canvas.toDataURL('image/png');
+    if(pdfH<=a4h){pdf.addImage(imgData,'PNG',0,0,a4w,pdfH);}
+    else{let y=0;while(y<pdfH){if(y>0)pdf.addPage();pdf.addImage(imgData,'PNG',0,-y,a4w,pdfH);y+=a4h;}}
 
-    const filename=`Receipt-${inv?.number||''}${inv?.clientName?'-'+inv.clientName.replace(/\s+/g,'-'):''}.pdf`;
+    const safeName=(inv?.clientName||'').replace(/[^a-z0-9-_]+/gi,'-').replace(/-+/g,'-').replace(/^-|-$/g,'');
+    const filename=`Receipt-${inv?.number||''}${safeName?'-'+safeName:''}.pdf`;
     const pdfBlob=pdf.output('blob');
     const pdfFile=new File([pdfBlob],filename,{type:'application/pdf'});
 
-    // Step 5: share — iOS gets native share sheet with "Save to Files"
-    if(navigator.share&&navigator.canShare&&navigator.canShare({files:[pdfFile]})){
+    if(isIOS&&navigator.share&&navigator.canShare&&navigator.canShare({files:[pdfFile]})){
       await navigator.share({files:[pdfFile],title:filename,text:`Receipt from Nola Solar Energy`});
+      toast('PDF ready to save');
     } else {
-      // Desktop: direct download
       const url=URL.createObjectURL(pdfBlob);
-      const a=document.createElement('a');a.href=url;a.download=filename;
-      document.body.appendChild(a);a.click();document.body.removeChild(a);
-      setTimeout(()=>URL.revokeObjectURL(url),3000);
-      toast('PDF saved!');
+      if(isIOS){
+        window.open(url,'_blank','noopener');
+        setTimeout(()=>URL.revokeObjectURL(url),15000);
+        toast('PDF opened. Use Share > Save to Files.');
+      }else if(isSafari){
+        window.open(url,'_blank','noopener');
+        setTimeout(()=>URL.revokeObjectURL(url),15000);
+        toast('PDF opened in new tab. Use File > Save As.');
+      }else{
+        if(window.showSaveFilePicker){
+          try{
+            const handle=await window.showSaveFilePicker({
+              suggestedName:filename,
+              types:[{
+                description:'PDF Document',
+                accept:{'application/pdf':['.pdf']}
+              }]
+            });
+            const writable=await handle.createWritable();
+            await writable.write(pdfBlob);
+            await writable.close();
+            URL.revokeObjectURL(url);
+            toast('PDF saved!');
+            return;
+          }catch(saveErr){
+            URL.revokeObjectURL(url);
+            if(saveErr&&saveErr.name==='AbortError'){
+              toast('Save cancelled');
+              return;
+            }
+          }
+        }
+        const a=document.createElement('a');
+        a.href=url;
+        a.download=filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(()=>URL.revokeObjectURL(url),3000);
+        toast('PDF downloaded.');
+      }
     }
-  }catch(e){if(e.name!=='AbortError'){toast('Error: '+e.message,4000);console.error(e);}}
-  finally{if(btn){btn.textContent='Save PDF';btn.disabled=false;}}
+    }catch(e){if(e.name!=='AbortError'){toast('Error: '+e.message,4000);console.error(e);}}
+  finally{if(btn){btn.disabled=false;btn.textContent=getPdfActionLabel();}}
 }
 
 /* ══════════════════════════════
