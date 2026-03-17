@@ -352,7 +352,7 @@ textarea.fi{min-height:80px;resize:vertical}
   <div class="clist" id="clist"><div class="empty">Loading...</div></div>
   <div class="tabs">
     <button class="tab on" onclick="switchTab('contacts',this)"><span class="ticon">👥</span>Customers</button>
-    <button class="tab" onclick="switchTab('invoices',this)"><span class="ticon">🧾</span>Invoices</button>
+    <button class="tab" onclick="switchTab('invoices',this)"><span class="ticon">🧾</span>Receipts</button>
     <button class="tab" onclick="switchTab('schedule',this)"><span class="ticon">📅</span>Schedule</button>
     <button class="tab" onclick="switchTab('notes',this)"><span class="ticon">📝</span>Notes</button>
   </div>
@@ -366,11 +366,11 @@ textarea.fi{min-height:80px;resize:vertical}
       <button class="ibtn add" onclick="showInvForm(null)">+</button>
     </div>
   </div>
-  <div class="subbar"><span id="inv-hdrsub">Invoices</span><button onclick="loadInvoices()">Sync</button></div>
-  <div class="clist" id="inv-clist"><div class="empty">No invoices yet.<br><br>Tap + to create your first invoice.</div></div>
+  <div class="subbar"><span id="inv-hdrsub">Receipts</span><button onclick="loadInvoices()">Sync</button></div>
+  <div class="clist" id="inv-clist"><div class="empty">No receipts yet.<br><br>Tap + to create your first receipt.</div></div>
   <div class="tabs">
     <button class="tab" onclick="switchTab('contacts',this)"><span class="ticon">👥</span>Customers</button>
-    <button class="tab on" onclick="switchTab('invoices',this)"><span class="ticon">🧾</span>Invoices</button>
+    <button class="tab on" onclick="switchTab('invoices',this)"><span class="ticon">🧾</span>Receipts</button>
     <button class="tab" onclick="switchTab('schedule',this)"><span class="ticon">📅</span>Schedule</button>
     <button class="tab" onclick="switchTab('notes',this)"><span class="ticon">📝</span>Notes</button>
   </div>
@@ -400,7 +400,7 @@ textarea.fi{min-height:80px;resize:vertical}
   </div>
   <div class="tabs">
     <button class="tab" onclick="switchTab('contacts',this)"><span class="ticon">👥</span>Customers</button>
-    <button class="tab" onclick="switchTab('invoices',this)"><span class="ticon">🧾</span>Invoices</button>
+    <button class="tab" onclick="switchTab('invoices',this)"><span class="ticon">🧾</span>Receipts</button>
     <button class="tab on" onclick="switchTab('schedule',this)"><span class="ticon">📅</span>Schedule</button>
     <button class="tab" onclick="switchTab('notes',this)"><span class="ticon">📝</span>Notes</button>
   </div>
@@ -470,7 +470,7 @@ textarea.fi{min-height:80px;resize:vertical}
   <div class="notes-list" id="notes-list"><div class="empty">No notes yet.<br><br>Tap + to add your first note.</div></div>
   <div class="tabs">
     <button class="tab" onclick="switchTab('contacts',this)"><span class="ticon">👥</span>Customers</button>
-    <button class="tab" onclick="switchTab('invoices',this)"><span class="ticon">🧾</span>Invoices</button>
+    <button class="tab" onclick="switchTab('invoices',this)"><span class="ticon">🧾</span>Receipts</button>
     <button class="tab" onclick="switchTab('schedule',this)"><span class="ticon">📅</span>Schedule</button>
     <button class="tab on" onclick="switchTab('notes',this)"><span class="ticon">📝</span>Notes</button>
   </div>
@@ -531,15 +531,19 @@ textarea.fi{min-height:80px;resize:vertical}
 <div class="view" id="view-invform">
   <div class="shdr">
     <button class="bbtn" onclick="showV('view-invlist')">← Cancel</button>
-    <span class="shdr-t" id="invf-title">New Invoice</span>
+    <span class="shdr-t" id="invf-title">New Receipt</span>
     <button class="obtn" id="inv-savebtn" onclick="saveInvoice()">Preview</button>
   </div>
   <div class="fbody">
     <div class="fg">
       <div class="inv-section-title">Bill To</div>
-      <div style="display:flex;gap:8px;margin-bottom:8px">
+      <div id="picker-mode-toggle" style="display:flex;gap:8px;margin-bottom:8px">
         <button class="fpill on" id="picker-tab-crm" onclick="switchPickerTab('crm')">From Contacts</button>
         <button class="fpill" id="picker-tab-manual" onclick="switchPickerTab('manual')">Manual Entry</button>
+      </div>
+      <div id="picker-locked" style="display:none;flex-direction:column;gap:4px;margin-bottom:8px;background:var(--bg2);border:.5px solid var(--border2);border-radius:var(--r);padding:12px 14px">
+        <div id="picker-locked-name" style="font-size:14px;font-weight:700;color:var(--text)"></div>
+        <div id="picker-locked-addr" style="font-size:13px;color:var(--text2);line-height:1.5"></div>
       </div>
       <div id="picker-crm">
         <input class="fi" id="contact-search" placeholder="Search contacts..." oninput="renderContactPicker()" style="margin-bottom:8px"/>
@@ -604,7 +608,7 @@ textarea.fi{min-height:80px;resize:vertical}
 <div class="view" id="view-invpreview">
   <div class="shdr">
     <button class="bbtn" onclick="showV('view-invform')">← Edit</button>
-    <span class="shdr-t">Invoice Preview</span>
+    <span class="shdr-t">Receipt Preview</span>
     <button class="bbtn" onclick="saveInvoiceFinal()">Save</button>
   </div>
   <div class="inv-preview-body" id="inv-preview-body"></div>
@@ -628,7 +632,7 @@ const STATUS_ICON={new:'✦',pending:'⏳',inprocess:'⚡',completed:'✔'};
 const HARDCODED_CFG={apiKey:'AIzaSyBdOfax4NY7PhyyFhpy7ItivkUID0ksMyo',databaseURL:'https://nolacrm-85b09-default-rtdb.firebaseio.com',projectId:'nolacrm-85b09',appId:'1:107492211574:web:7ed2a2dd40d8be4707d857',authDomain:'nolacrm-85b09.firebaseapp.com'};
 
 let db=null,contacts={},photos={},invoices={},selCat='all',selId=null,editId=null,fCat='residential';
-let invPickerTab='crm',invSelectedContact=null,lineItems=[],invEditId=null;
+let invPickerTab='crm',invSelectedContact=null,lineItems=[],invEditId=null,invLockedContactId=null;
 let currentInvData=null;
 let LOGO_B64=''; // pre-loaded logo
 window.LOGO_B64='';
@@ -664,7 +668,7 @@ function sync(){
   document.getElementById('ldot').style.display='inline-block';
   db.ref('contacts').on('value',s=>{contacts=s.val()||{};renderList();document.getElementById('hdrsub').textContent=Object.keys(contacts).length+' contacts • live';});
   db.ref('photos').on('value',s=>{photos=s.val()||{};if(selId&&document.getElementById('view-detail').classList.contains('active')){const c=contacts[selId];if(c)renderDet(c);}renderList();});
-  db.ref('invoices').on('value',s=>{invoices=s.val()||{};renderInvList();document.getElementById('inv-hdrsub').textContent=Object.keys(invoices).length+' invoices';});
+  db.ref('invoices').on('value',s=>{invoices=s.val()||{};renderInvList();document.getElementById('inv-hdrsub').textContent=Object.keys(invoices).length+' receipts';});
   initSchedJobs();
   initNotes();
 }
@@ -755,7 +759,7 @@ function renderDet(c){
       ${c.phone?`<a class="abtn primary" href="tel:${c.phone}">Call</a>`:'<div></div>'}
       ${c.email?`<a class="abtn" href="mailto:${c.email}">Email</a>`:'<div></div>'}
     </div>
-    <button class="abtn inv" style="width:100%;margin-bottom:14px" onclick="showInvForm('${c.id}')">🧾 Create Invoice</button>
+    <button class="abtn inv" style="width:100%;margin-bottom:14px" onclick="showInvForm('${c.id}')">🧾 Create Receipt</button>
     <div class="psec">${gal}<label class="padd" onclick="document.getElementById('photo-input').click()">+ Add Photo${pks.length?' ('+pks.length+' photos)':''}</label></div>
     <div class="icard">${rows.map(r=>`<div class="irow"><div class="ilbl">${r.l}</div><div class="ival">${r.v}</div></div>`).join('')}</div>
     <div class="arow">
@@ -866,20 +870,20 @@ async function delPhoto(cid,pk){
 ══════════════════════════════ */
 
 function showInvForm(contactId){
-  invEditId=null;invSelectedContact=null;lineItems=[];
-  document.getElementById('invf-title').textContent='New Invoice';
+  invEditId=null;invSelectedContact=null;lineItems=[];invLockedContactId=null;
+  document.getElementById('invf-title').textContent='New Receipt';
   document.getElementById('inv-date').value=new Date().toISOString().split('T')[0];
   document.getElementById('inv-payment').value='Check';
   document.getElementById('inv-paid').value='paid';
   document.getElementById('contact-search').value='';
   document.getElementById('inv-client-name').value='';
   document.getElementById('inv-client-addr').value='';
-  switchPickerTab('crm');
   // Auto-select contact if coming from detail
   if(contactId&&contacts[contactId]){
     invSelectedContact=contacts[contactId];
-    switchPickerTab('crm');
+    invLockedContactId=contactId;
   }
+  invPickerTab='crm';
   // Set next invoice number
   const nums=Object.values(invoices).map(i=>parseInt(i.number)||0);
   const nextNum=nums.length?Math.max(...nums)+1:1;
@@ -887,15 +891,48 @@ function showInvForm(contactId){
   lineItems=[{desc:'',qty:1,price:''}];
   renderLineItems();
   renderContactPicker();
+  renderInvBillToMode();
   showV('view-invform');
 }
 
+function applyInvPickerTab(){
+  document.getElementById('picker-crm').style.display=invPickerTab==='crm'?'block':'none';
+  document.getElementById('picker-manual').style.display=invPickerTab==='manual'?'flex':'none';
+  document.getElementById('picker-tab-crm').classList.toggle('on',invPickerTab==='crm');
+  document.getElementById('picker-tab-manual').classList.toggle('on',invPickerTab==='manual');
+}
+
+function renderInvBillToMode(){
+  const locked=!!(invLockedContactId&&invSelectedContact&&invSelectedContact.id===invLockedContactId);
+  const toggle=document.getElementById('picker-mode-toggle');
+  const lockedCard=document.getElementById('picker-locked');
+  const crm=document.getElementById('picker-crm');
+  const manual=document.getElementById('picker-manual');
+  if(locked){
+    const addr=document.getElementById('picker-locked-addr');
+    toggle.style.display='none';
+    crm.style.display='none';
+    manual.style.display='none';
+    lockedCard.style.display='flex';
+    document.getElementById('picker-locked-name').textContent=fullName(invSelectedContact);
+    if(invSelectedContact.address){
+      addr.textContent=invSelectedContact.address;
+      addr.style.display='block';
+    }else{
+      addr.textContent='';
+      addr.style.display='none';
+    }
+    return;
+  }
+  lockedCard.style.display='none';
+  toggle.style.display='flex';
+  applyInvPickerTab();
+}
+
 function switchPickerTab(tab){
+  if(invLockedContactId&&invSelectedContact&&invSelectedContact.id===invLockedContactId)return;
   invPickerTab=tab;
-  document.getElementById('picker-crm').style.display=tab==='crm'?'block':'none';
-  document.getElementById('picker-manual').style.display=tab==='manual'?'flex':'none';
-  document.getElementById('picker-tab-crm').classList.toggle('on',tab==='crm');
-  document.getElementById('picker-tab-manual').classList.toggle('on',tab==='manual');
+  applyInvPickerTab();
 }
 
 function renderContactPicker(){
@@ -913,7 +950,11 @@ function renderContactPicker(){
       ${invSelectedContact?.id===c.id?'<span style="color:var(--orange);font-weight:700">✔</span>':''}
     </div>`).join('');
 }
-function selectInvContact(id){invSelectedContact=contacts[id];renderContactPicker();}
+function selectInvContact(id){
+  if(invLockedContactId&&invSelectedContact&&invSelectedContact.id===invLockedContactId)return;
+  invSelectedContact=contacts[id];
+  renderContactPicker();
+}
 
 function addLineItem(){lineItems.push({desc:'',qty:1,price:''});renderLineItems();}
 function removeLineItem(i){lineItems.splice(i,1);if(!lineItems.length)lineItems=[{desc:'',amount:''}];renderLineItems();}
@@ -1073,16 +1114,16 @@ async function saveInvoiceFinal(){
   if(!currentInvData)return;
   try{
     await db.ref('invoices/'+currentInvData.id).set(currentInvData);
-    toast('Invoice saved!');showV('view-invlist');
+    toast('Receipt saved!');showV('view-invlist');
   }catch(e){toast('Error: '+e.message,4000);}
 }
 
 function renderInvList(){
   const el=document.getElementById('inv-clist');
   const all=Object.values(invoices).sort((a,b)=>parseInt(b.number)-parseInt(a.number));
-  if(!all.length){el.innerHTML='<div class="empty">No invoices yet.<br><br>Tap + to create your first invoice.</div>';return;}
+  if(!all.length){el.innerHTML='<div class="empty">No receipts yet.<br><br>Tap + to create your first receipt.</div>';return;}
   const total=all.reduce((s,i)=>(i.lineItems||[]).reduce((ss,li)=>ss+(parseFloat(li.amount)||0),s),0);
-  document.getElementById('inv-hdrsub').textContent=all.length+' invoices • $'+total.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})+' total';
+  document.getElementById('inv-hdrsub').textContent=all.length+' receipts • $'+total.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})+' total';
   el.innerHTML=all.map(inv=>{
     const t=(inv.total)||((inv.lineItems||[]).reduce((s,i)=>s+(parseFloat(i.amount)||0),0))+(inv.taxAmt||0);
     return`<div class="inv-card" onclick="previewSavedInv('${inv.id}')">
@@ -1116,10 +1157,10 @@ function previewSavedInv(id){
 }
 
 async function deleteInvoice(id){
-  if(!confirm('Delete this invoice?'))return;
+  if(!confirm('Delete this receipt?'))return;
   try{
     await db.ref('invoices/'+id).remove();
-    toast('Invoice deleted');
+    toast('Receipt deleted');
     showV('view-invlist');
     // Reset header buttons back to normal
     document.querySelector('#view-invpreview .shdr .bbtn').textContent='← Edit';
@@ -1196,9 +1237,9 @@ async function shareInvoice(){
     const inv=currentInvData;
     const isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent);
     const isSafari=/^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-    if(!inv){throw new Error('Invoice data not found');}
+    if(!inv){throw new Error('Receipt data not found');}
     const sourcePage=document.querySelector('#inv-preview-body .inv-preview-page');
-    if(!sourcePage){throw new Error('Invoice preview not found');}
+    if(!sourcePage){throw new Error('Receipt preview not found');}
 
     const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
     const cssText=Array.from(document.querySelectorAll('style')).map(s=>s.textContent).join('\n');
