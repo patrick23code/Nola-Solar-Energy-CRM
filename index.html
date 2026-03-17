@@ -510,6 +510,7 @@ textarea.fi{min-height:80px;resize:vertical}
     <button class="obtn" id="savebtn" onclick="saveContact()">Save</button>
   </div>
   <div class="fbody">
+    <div class="fg"><label>Project Name</label><input class="fi" id="f-project" type="text" placeholder="Roof Upgrade - Smith Home"/></div>
     <div class="r2">
       <div class="fg"><label>First Name *</label><input class="fi" id="f-fn" type="text" placeholder="John"/></div>
       <div class="fg"><label>Last Name</label><input class="fi" id="f-ln" type="text" placeholder="Smith"/></div>
@@ -717,7 +718,7 @@ function renderList(){
     if(selCat==='residential'||selCat==='commercial')mc=c.category===selCat;
     else if(selCat.startsWith('status:'))mc=(c.status||'new')===selCat.replace('status:','');
     const fn=fullName(c);
-    const ms=!s||fn.toLowerCase().includes(s)||(c.phone||'').includes(s)||(c.email||'').toLowerCase().includes(s)||(c.address||'').toLowerCase().includes(s)||(c.notes||'').toLowerCase().includes(s);
+    const ms=!s||fn.toLowerCase().includes(s)||(c.projectName||'').toLowerCase().includes(s)||(c.phone||'').includes(s)||(c.email||'').toLowerCase().includes(s)||(c.address||'').toLowerCase().includes(s)||(c.notes||'').toLowerCase().includes(s);
     return mc&&ms;
   }).sort((a,b)=>new Date(b.updatedAt||b.createdAt)-new Date(a.updatedAt||a.createdAt));
   document.getElementById('hdrsub').textContent=all.length+' contacts • live';
@@ -743,6 +744,7 @@ function renderDet(c){
   const av=fp?`<img src="${fp}"/>`:initials(c);
   const st=c.status||'new';
   const rows=[
+    c.projectName&&{l:'Project Name',v:c.projectName},
     c.phone&&{l:'Phone',v:`<a href="tel:${c.phone}">${c.phone}</a>`},
     c.email&&{l:'Email',v:`<a href="mailto:${c.email}">${c.email}</a>`},
     c.address&&{l:'Address',v:c.address},
@@ -777,11 +779,12 @@ function initJobs(){
   }).join('');
 }
 function clearForm(){
-  ['f-fn','f-ln','f-phone','f-email','f-addr','f-notes'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
+  ['f-project','f-fn','f-ln','f-phone','f-email','f-addr','f-notes'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
   JOBS.forEach(j=>{const k='j_'+j.replace(/[\s\/]/g,'_');document.getElementById(k)?.classList.remove('on');document.getElementById('d_'+k)?.classList.remove('on');});
   formPhotos={};renderFormGallery();
 }
 function fillForm(c){
+  document.getElementById('f-project').value=c.projectName||'';
   document.getElementById('f-fn').value=c.firstName||c.name||'';
   document.getElementById('f-ln').value=c.lastName||'';
   document.getElementById('f-phone').value=c.phone||'';
@@ -793,6 +796,7 @@ function fillForm(c){
 }
 function togJob(j){const k='j_'+j.replace(/[\s\/]/g,'_');document.getElementById(k)?.classList.toggle('on');document.getElementById('d_'+k)?.classList.toggle('on');}
 async function saveContact(){
+  const projectName=document.getElementById('f-project').value.trim();
   const fn=document.getElementById('f-fn').value.trim();
   if(!fn){toast('First name is required!');return;}
   const btn=document.getElementById('savebtn');btn.disabled=true;btn.textContent='Saving...';
@@ -800,7 +804,7 @@ async function saveContact(){
   const jobTypes=JOBS.filter(j=>document.getElementById('j_'+j.replace(/[\s\/]/g,'_'))?.classList.contains('on'));
   const now=new Date().toISOString();const id=editId||('c_'+Date.now());
   const ex=editId?contacts[editId]:null;
-  const c={id,firstName:fn,lastName:ln,name:fn+(ln?' '+ln:''),category:fCat,status:ex?.status||'new',
+  const c={id,projectName,firstName:fn,lastName:ln,name:fn+(ln?' '+ln:''),category:fCat,status:ex?.status||'new',
     phone:document.getElementById('f-phone').value.trim(),email:document.getElementById('f-email').value.trim(),
     address:document.getElementById('f-addr').value.trim(),notes:document.getElementById('f-notes').value.trim(),
     jobTypes,updatedAt:now,createdAt:ex?.createdAt||now};
