@@ -718,6 +718,7 @@ window.addEventListener('DOMContentLoaded',()=>{
   const t=new Date();
   calSelDate=`${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`;
   document.getElementById('inv-date').value=new Date().toISOString().split('T')[0];
+  document.getElementById('inv-valid-until').value=getDateOffset(7);
 });
 
 function sync(){
@@ -839,7 +840,7 @@ function renderDet(c){
       ${c.phone?`<a class="abtn primary" href="tel:${c.phone}">Call</a>`:'<div></div>'}
       ${c.email?`<a class="abtn" href="mailto:${c.email}">Email</a>`:'<div></div>'}
     </div>
-    <button class="abtn inv" style="width:100%;margin-bottom:14px" onclick="showInvForm('${c.id}')">🧾 Create Receipt</button>
+    <button class="abtn inv" style="width:100%;margin-bottom:14px" onclick="showInvForm('${c.id}')">🧾 Create Invoice / Quote</button>
     <div class="psec">${gal}<label class="padd" onclick="document.getElementById('photo-input').click()">+ Add Photo${pks.length?' ('+pks.length+' photos)':''}</label></div>
     <div class="icard">${rows.map(r=>`<div class="irow"><div class="ilbl">${r.l}</div><div class="ival">${r.v}</div></div>`).join('')}</div>
     <div class="arow">
@@ -960,11 +961,18 @@ async function delPhoto(cid,pk){
 ══════════════════════════════ */
 
 function showInvForm(contactId){
-  invEditId=null;invSelectedContact=null;lineItems=[];invLockedContactId=null;
-  document.getElementById('invf-title').textContent='New Receipt';
+  invEditId=null;invSelectedContact=null;lineItems=[];invLockedContactId=null;currentInvData=null;
+  document.getElementById('invf-title').textContent='New Invoice / Quote';
+  document.getElementById('inv-kind').value='quote';
   document.getElementById('inv-date').value=new Date().toISOString().split('T')[0];
-  document.getElementById('inv-payment').value='Check';
-  document.getElementById('inv-paid').value='paid';
+  document.getElementById('inv-valid-until').value=getDateOffset(7);
+  document.getElementById('inv-status').value='draft';
+  document.getElementById('inv-payment-terms').value='50% deposit, balance due on completion';
+  document.getElementById('inv-project').value='';
+  document.getElementById('inv-scope').value='';
+  document.getElementById('inv-notes').value='';
+  document.getElementById('inv-tax-on').checked=false;
+  document.getElementById('inv-tax-rate').value='10';
   document.getElementById('contact-search').value='';
   document.getElementById('inv-client-name').value='';
   document.getElementById('inv-client-addr').value='';
@@ -972,13 +980,16 @@ function showInvForm(contactId){
   if(contactId&&contacts[contactId]){
     invSelectedContact=contacts[contactId];
     invLockedContactId=contactId;
+    document.getElementById('inv-project').value=invSelectedContact.projectName||(invSelectedContact.jobTypes||[]).join(', ');
+    document.getElementById('inv-scope').value=invSelectedContact.notes||'';
   }
   invPickerTab='crm';
   // Set next invoice number
   const nums=Object.values(invoices).map(i=>parseInt(i.number)||0);
   const nextNum=nums.length?Math.max(...nums)+1:1;
   document.getElementById('inv-num').value=nextNum;
-  lineItems=[{desc:'',qty:1,price:''}];
+  const firstLineDesc=invSelectedContact?.projectName||(invSelectedContact?.jobTypes||[]).join(', ')||'';
+  lineItems=[{desc:firstLineDesc,qty:1,price:''}];
   renderLineItems();
   renderContactPicker();
   renderInvBillToMode();
@@ -1043,11 +1054,19 @@ function renderContactPicker(){
 function selectInvContact(id){
   if(invLockedContactId&&invSelectedContact&&invSelectedContact.id===invLockedContactId)return;
   invSelectedContact=contacts[id];
+  if(invSelectedContact){
+    if(!document.getElementById('inv-project').value.trim()){
+      document.getElementById('inv-project').value=invSelectedContact.projectName||(invSelectedContact.jobTypes||[]).join(', ');
+    }
+    if(!document.getElementById('inv-scope').value.trim()&&invSelectedContact.notes){
+      document.getElementById('inv-scope').value=invSelectedContact.notes;
+    }
+  }
   renderContactPicker();
 }
 
 function addLineItem(){lineItems.push({desc:'',qty:1,price:''});renderLineItems();}
-function removeLineItem(i){lineItems.splice(i,1);if(!lineItems.length)lineItems=[{desc:'',amount:''}];renderLineItems();}
+function removeLineItem(i){lineItems.splice(i,1);if(!lineItems.length)lineItems=[{desc:'',qty:1,price:''}];renderLineItems();}
 function renderLineItems(){
   document.getElementById('line-items').innerHTML=lineItems.map((item,i)=>{
     const qty=parseFloat(item.qty)||1;
@@ -1122,13 +1141,18 @@ warmInvoiceLogo();
 
 function buildInvHTML(inv, logoSrc){
   const src=logoSrc||LOGO_B64||cachedInvoiceLogoSrc||DEFAULT_LOGO_PATH;
-  const paid=inv.status==='paid';
+  const kind=getInvoiceKind(inv);
+  const docLabel=getInvoiceLabel(kind);
+  const watermark=getInvoiceWatermark(inv);
   const items=inv.lineItems||[];
-  const subtotal=inv.subtotal||items.reduce((s,i)=>s+(parseFloat(i.amount)||0),0);
-  const taxAmt=inv.taxAmt||0;
-  const total=inv.total||(subtotal+taxAmt);
-  const taxRate=inv.taxRate||10;
-  const issueDate=inv.date?new Date(inv.date+'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'';
+  const subtotal=Number.isFinite(parseFloat(inv.subtotal))?parseFloat(inv.subtotal):items.reduce((s,i)=>s+(parseFloat(i.amount)||0),0);
+  const taxAmt=Number.isFinite(parseFloat(inv.taxAmt))?parseFloat(inv.taxAmt):0;
+  const total=Number.isFinite(parseFloat(inv.total))?parseFloat(inv.total):(subtotal+taxAmt);
+  const taxRate=Number.isFinite(parseFloat(inv.taxRate))?parseFloat(inv.taxRate):10;
+  const issueDate=formatInvDate(inv.date);
+  const validUntil=formatInvDate(inv.validUntil);
+  const notesText=formatInvText(inv.notes||(kind==='quote'?'Pricing is based on the scope of work listed below.':'Thank you for choosing Nola Solar Energy.'));
+  const termsText=formatInvText(inv.paymentTerms||(inv.payment?`Paid by ${inv.payment}`:(kind==='quote'?'Pricing valid until the expiration date shown above.':'Payment due per agreed terms.')));
   return`<div class="inv-preview-page">
     <div class="inv-pg-header">
       <div class="inv-pg-header-left">
@@ -1142,21 +1166,28 @@ function buildInvHTML(inv, logoSrc){
         </div>
       </div>
       <div class="inv-pg-header-right">
-        <div class="inv-word">RECEIPT</div>
-        <div class="inv-number">#REC-${inv.number}</div>
+        <div class="inv-word">${docLabel.toUpperCase()}</div>
+        <div class="inv-number">#${inv.number||'--'}</div>
         <div class="inv-dates">
           <div class="inv-date-row"><span class="inv-date-lbl">Issue Date:</span><span class="inv-date-val">${issueDate}</span></div>
+          ${validUntil?`<div class="inv-date-row"><span class="inv-date-lbl">Valid Until:</span><span class="inv-date-val">${validUntil}</span></div>`:''}
+          <div class="inv-date-row"><span class="inv-date-lbl">Status:</span><span class="inv-date-val">${getInvoiceStatusLabel(inv.status)}</span></div>
         </div>
       </div>
     </div>
     <div class="inv-divider"></div>
     <div class="inv-billto">
-      <div class="inv-billto-lbl">Bill To</div>
+      <div class="inv-billto-lbl">${kind==='quote'?'Prepared For':'Bill To'}</div>
       <div class="inv-billto-name">${inv.clientName||''}</div>
       <div class="inv-billto-detail">${inv.clientAddress||''}</div>
     </div>
+    ${(inv.projectName||inv.scope)?`<div class="inv-project-wrap">
+      <div class="inv-project-lbl">Project / Scope</div>
+      ${inv.projectName?`<div class="inv-project-title">${inv.projectName}</div>`:''}
+      ${inv.scope?`<div class="inv-project-scope">${formatInvText(inv.scope)}</div>`:''}
+    </div>`:''}
     <div class="inv-items-wrap">
-      ${paid?'<div class="inv-paid-watermark">PAID</div>':''}
+      ${watermark?`<div class="inv-paid-watermark">${watermark}</div>`:''}
       <table class="inv-items-table">
         <thead><tr><th>Description</th><th>Qty</th><th>Price</th><th>Total</th></tr></thead>
         <tbody>${items.map(i=>{
@@ -1170,7 +1201,7 @@ function buildInvHTML(inv, logoSrc){
     <div class="inv-bottom">
       <div class="inv-notes">
         <div class="inv-notes-lbl">Notes / Terms</div>
-        <div class="inv-notes-text">Thank you for choosing Nola Solar Energy.<br>We appreciate your business.</div>
+        <div class="inv-notes-text">${notesText}</div>
       </div>
       <div class="inv-totals-block">
         <div class="inv-totals-line"><span>Subtotal</span><span class="inv-tval">$${subtotal.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}</span></div>
@@ -1180,8 +1211,8 @@ function buildInvHTML(inv, logoSrc){
     </div>
     <div class="inv-footer">
       <div class="inv-footer-terms">
-        <span class="inv-tc-lbl">Terms &amp; Conditions</span>
-        <span class="inv-tc-val">Paid by ${inv.payment||'Check'}</span>
+        <span class="inv-tc-lbl">Payment / Terms</span>
+        <span class="inv-tc-val">${termsText}</span>
       </div>
     </div>
   </div>`;
@@ -1190,6 +1221,11 @@ function buildInvHTML(inv, logoSrc){
 function saveInvoice(){
   const client=getInvClientInfo();
   if(!client.name){toast('Please select or enter a client name');return;}
+  const projectName=document.getElementById('inv-project').value.trim();
+  const scope=document.getElementById('inv-scope').value.trim();
+  const notes=document.getElementById('inv-notes').value.trim();
+  const paymentTerms=document.getElementById('inv-payment-terms').value.trim();
+  if(!projectName&&!scope){toast('Add a project title or scope of work');return;}
   const items=lineItems.filter(i=>i.desc||(parseFloat(i.price)||0)>0).map(i=>({
     desc:i.desc||'',
     qty:parseFloat(i.qty)||1,
@@ -1201,19 +1237,25 @@ function saveInvoice(){
   const taxRate=parseFloat(document.getElementById('inv-tax-rate')?.value)||10;
   const subtotal=items.reduce((s,i)=>s+(parseFloat(i.amount)||0),0);
   const taxAmt=taxOn?(subtotal*taxRate/100):0;
+  const now=new Date().toISOString();
   const inv={
     id:invEditId||('inv_'+Date.now()),
+    kind:document.getElementById('inv-kind').value,
     number:document.getElementById('inv-num').value,
     date:document.getElementById('inv-date').value,
+    validUntil:document.getElementById('inv-valid-until').value,
+    projectName,scope,notes,paymentTerms,
     clientName:client.name,clientAddress:client.address,
     contactId:invSelectedContact?.id||null,
-    lineItems:items,payment:document.getElementById('inv-payment').value,
-    status:document.getElementById('inv-paid').value,
+    lineItems:items,
+    status:document.getElementById('inv-status').value,
     taxOn,taxRate,taxAmt,subtotal,total:subtotal+taxAmt,
-    createdAt:new Date().toISOString()
+    createdAt:currentInvData?.createdAt||now,
+    updatedAt:now
   };
   currentInvData=inv;
   document.getElementById('inv-preview-body').innerHTML=buildInvHTML(inv);
+  updateInvPreviewTitle(inv);
   // Reset header to new-invoice state
   document.querySelector('#view-invpreview .shdr .bbtn').textContent='← Edit';
   document.querySelector('#view-invpreview .shdr .bbtn').onclick=()=>showV('view-invform');
@@ -1227,27 +1269,37 @@ async function saveInvoiceFinal(){
   if(!currentInvData)return;
   try{
     await db.ref('invoices/'+currentInvData.id).set(currentInvData);
-    toast('Receipt saved!');showV('view-invlist');
+    toast('Document saved!');showV('view-invlist');
   }catch(e){toast('Error: '+e.message,4000);}
 }
 
 function renderInvList(){
   const el=document.getElementById('inv-clist');
-  const all=Object.values(invoices).sort((a,b)=>parseInt(b.number)-parseInt(a.number));
-  if(!all.length){el.innerHTML='<div class="empty">No receipts yet.<br><br>Tap + to create your first receipt.</div>';return;}
-  const total=all.reduce((s,i)=>(i.lineItems||[]).reduce((ss,li)=>ss+(parseFloat(li.amount)||0),s),0);
-  document.getElementById('inv-hdrsub').textContent=all.length+' receipts • $'+total.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})+' total';
+  const all=Object.values(invoices).sort((a,b)=>((parseInt(b.number)||0)-(parseInt(a.number)||0))||new Date(b.updatedAt||b.createdAt||0)-new Date(a.updatedAt||a.createdAt||0));
+  if(!all.length){
+    document.getElementById('inv-hdrsub').textContent='0 documents';
+    el.innerHTML='<div class="empty">No invoices or quotes yet.<br><br>Tap + to create your first document.</div>';
+    return;
+  }
+  const total=all.reduce((sum,inv)=>{
+    const itemTotal=(inv.lineItems||[]).reduce((itemSum,li)=>itemSum+(parseFloat(li.amount)||0),0);
+    return sum+(Number.isFinite(parseFloat(inv.total))?parseFloat(inv.total):(itemTotal+(parseFloat(inv.taxAmt)||0)));
+  },0);
+  document.getElementById('inv-hdrsub').textContent=all.length+' documents • $'+total.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})+' total';
   el.innerHTML=all.map(inv=>{
-    const t=(inv.total)||((inv.lineItems||[]).reduce((s,i)=>s+(parseFloat(i.amount)||0),0))+(inv.taxAmt||0);
+    const t=Number.isFinite(parseFloat(inv.total))?parseFloat(inv.total):((inv.lineItems||[]).reduce((s,i)=>s+(parseFloat(i.amount)||0),0)+(parseFloat(inv.taxAmt)||0));
+    const meta=[formatInvDate(inv.date),inv.projectName].filter(Boolean).join(' • ');
+    const scopeRaw=(inv.scope||'').replace(/\s+/g,' ').trim();
+    const scopePreview=scopeRaw.length>82?scopeRaw.slice(0,79)+'...':scopeRaw;
     return`<div class="inv-card" onclick="previewSavedInv('${inv.id}')">
       <div class="inv-card-l">
-        <div class="invnum">Receipt #${inv.number}</div>
-        <div class="invname">${inv.clientName||''}</div>
-        <div class="invdate">${inv.date?new Date(inv.date+'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):''}</div>
+        <div class="invnum">${getInvoiceLabel(inv)} #${inv.number||'--'}</div>
+        <div class="invname">${inv.clientName||'Unnamed Client'}</div>
+        <div class="invdate">${meta||scopePreview||'No project details added'}</div>
       </div>
       <div class="inv-card-r">
         <div class="invamt">$${t.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}</div>
-        <div class="inv-status ${inv.status||'unpaid'}">${inv.status==='paid'?'PAID':'UNPAID'}</div>
+        <div class="inv-status ${inv.status||'draft'}">${getInvoiceStatusLabel(inv.status||'draft')}</div>
       </div>
     </div>`;
   }).join('');
@@ -1257,6 +1309,7 @@ function previewSavedInv(id){
   const inv=invoices[id];if(!inv)return;
   currentInvData=inv;
   document.getElementById('inv-preview-body').innerHTML=buildInvHTML(inv);
+  updateInvPreviewTitle(inv);
   // Update header for saved invoice view
   document.querySelector('#view-invpreview .shdr .bbtn').textContent='← Back';
   document.querySelector('#view-invpreview .shdr .bbtn').onclick=()=>showV('view-invlist');
@@ -1270,14 +1323,15 @@ function previewSavedInv(id){
 }
 
 async function deleteInvoice(id){
-  if(!confirm('Delete this receipt?'))return;
+  if(!confirm('Delete this document?'))return;
   try{
     await db.ref('invoices/'+id).remove();
-    toast('Receipt deleted');
+    toast('Document deleted');
     showV('view-invlist');
     // Reset header buttons back to normal
     document.querySelector('#view-invpreview .shdr .bbtn').textContent='← Edit';
     document.querySelector('#view-invpreview .shdr .bbtn').onclick=()=>showV('view-invform');
+    document.querySelector('#view-invpreview .shdr .shdr-t').textContent='Document Preview';
     const saveBtn=document.querySelector('#view-invpreview .shdr .bbtn+span+button');
     if(saveBtn){saveBtn.textContent='Save';saveBtn.onclick=saveInvoiceFinal;saveBtn.style.background='';saveBtn.style.color='';saveBtn.style.border='';}
   }catch(e){toast('Error: '+e.message,4000);}
@@ -1286,7 +1340,7 @@ async function deleteInvoice(id){
 function printInvoice(){
   const content=document.getElementById('inv-preview-body').innerHTML;
   const w=window.open('','_blank');
-  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Receipt #${currentInvData?.number||''} - ${currentInvData?.clientName||''}</title><style>
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${getInvoiceLabel(currentInvData||{})} #${currentInvData?.number||''} - ${currentInvData?.clientName||''}</title><style>
     *{box-sizing:border-box;margin:0;padding:0}
     body{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}
     .inv-preview-page{background:#fff;max-width:720px;margin:0 auto;color:#111;position:relative}
@@ -1350,9 +1404,9 @@ async function shareInvoice(){
     const inv=currentInvData;
     const isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent);
     const isSafari=/^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-    if(!inv){throw new Error('Receipt data not found');}
+    if(!inv){throw new Error('Document data not found');}
     const sourcePage=document.querySelector('#inv-preview-body .inv-preview-page');
-    if(!sourcePage){throw new Error('Receipt preview not found');}
+    if(!sourcePage){throw new Error('Document preview not found');}
 
     const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
     const cssText=Array.from(document.querySelectorAll('style')).map(s=>s.textContent).join('\n');
@@ -1434,12 +1488,13 @@ async function shareInvoice(){
     else{let y=0;while(y<pdfH){if(y>0)pdf.addPage();pdf.addImage(imgData,'PNG',0,-y,a4w,pdfH);y+=a4h;}}
 
     const safeName=(inv?.clientName||'').replace(/[^a-z0-9-_]+/gi,'-').replace(/-+/g,'-').replace(/^-|-$/g,'');
-    const filename=`Receipt-${inv?.number||''}${safeName?'-'+safeName:''}.pdf`;
+    const safeDocLabel=getInvoiceLabel(inv).replace(/[^a-z0-9-_]+/gi,'-');
+    const filename=`${safeDocLabel}-${inv?.number||''}${safeName?'-'+safeName:''}.pdf`;
     const pdfBlob=pdf.output('blob');
     const pdfFile=new File([pdfBlob],filename,{type:'application/pdf'});
 
     if(isIOS&&navigator.share&&navigator.canShare&&navigator.canShare({files:[pdfFile]})){
-      await navigator.share({files:[pdfFile],title:filename,text:`Receipt from Nola Solar Energy`});
+      await navigator.share({files:[pdfFile],title:filename,text:`${getInvoiceLabel(inv)} from Nola Solar Energy`});
       toast('PDF ready to save');
     } else {
       const url=URL.createObjectURL(pdfBlob);
@@ -1699,7 +1754,6 @@ async function markJobStatus(id, status){
 }
 
 async function deleteSchedJob(id){
-  if(!confirm('Delete this scheduled job?'))return;
   try{await db.ref('schedJobs/'+id).remove();toast('Deleted');}
   catch(e){toast('Error: '+e.message,4000);}
 }
