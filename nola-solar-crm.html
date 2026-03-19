@@ -47,11 +47,14 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFo
 .view.active{display:flex}
 
 /* MAIN HDR */
-.mhdr{background:var(--orange);padding:14px 16px 12px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;border-bottom:none;box-shadow:0 2px 8px rgba(245,166,35,.3)}
+.mhdr{background:var(--orange);padding:14px 16px 12px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;border-bottom:none;box-shadow:0 2px 8px rgba(245,166,35,.3);position:relative;overflow:hidden}
+.mhdr::after{content:'';position:absolute;left:50%;top:50%;transform:translate(-50%,-48%);width:136px;height:44px;pointer-events:none;z-index:0;opacity:.98;filter:drop-shadow(0 8px 12px rgba(7,38,79,.24));background-repeat:no-repeat;background-position:center;background-size:contain;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 60'%3E%3Cdefs%3E%3ClinearGradient id='panel' x1='40' y1='14' x2='136' y2='42' gradientUnits='userSpaceOnUse'%3E%3Cstop stop-color='%236fc5ff'/%3E%3Cstop offset='.55' stop-color='%232f83d8'/%3E%3Cstop offset='1' stop-color='%230d4e93'/%3E%3C/linearGradient%3E%3ClinearGradient id='glass' x1='48' y1='14' x2='126' y2='40' gradientUnits='userSpaceOnUse'%3E%3Cstop stop-color='%23ffffff' stop-opacity='.62'/%3E%3Cstop offset='.28' stop-color='%23dff4ff' stop-opacity='.18'/%3E%3Cstop offset='1' stop-color='%23ffffff' stop-opacity='0'/%3E%3C/linearGradient%3E%3CradialGradient id='glow' cx='0' cy='0' r='1' gradientUnits='userSpaceOnUse' gradientTransform='translate(139 11) rotate(90) scale(18 24)'%3E%3Cstop stop-color='%23fff3c4' stop-opacity='.96'/%3E%3Cstop offset='1' stop-color='%23fff3c4' stop-opacity='0'/%3E%3C/radialGradient%3E%3C/defs%3E%3Cellipse cx='89' cy='48' rx='60' ry='7' fill='%23002a56' fill-opacity='.16'/%3E%3Ccircle cx='139' cy='11' r='7' fill='%23ffe08b'/%3E%3Ccircle cx='139' cy='11' r='18' fill='url(%23glow)'/%3E%3Cpath d='M40 42h96' stroke='%2392b7dc' stroke-width='2.6' stroke-linecap='round' stroke-opacity='.75'/%3E%3Cpath d='M49 47h96' stroke='%237ea8d7' stroke-width='2.6' stroke-linecap='round' stroke-opacity='.55'/%3E%3Cg stroke='%23d6ebff' stroke-width='1.1' stroke-linejoin='round'%3E%3Cpath d='M46 16h30l-9 23H37z' fill='url(%23panel)'/%3E%3Cpath d='M78 16h30l-9 23H69z' fill='url(%23panel)'/%3E%3Cpath d='M110 16h30l-9 23h-30z' fill='url(%23panel)'/%3E%3C/g%3E%3Cg stroke='%23b7dcff' stroke-opacity='.5' stroke-width='.9'%3E%3Cpath d='M54 20h22'/%3E%3Cpath d='M50 28h22'/%3E%3Cpath d='M46 36h22'/%3E%3Cpath d='M58 18l-8 21'/%3E%3Cpath d='M67 18l-8 21'/%3E%3Cpath d='M86 20h22'/%3E%3Cpath d='M82 28h22'/%3E%3Cpath d='M78 36h22'/%3E%3Cpath d='M90 18l-8 21'/%3E%3Cpath d='M99 18l-8 21'/%3E%3Cpath d='M118 20h22'/%3E%3Cpath d='M114 28h22'/%3E%3Cpath d='M110 36h22'/%3E%3Cpath d='M122 18l-8 21'/%3E%3Cpath d='M131 18l-8 21'/%3E%3C/g%3E%3Cg fill='url(%23glass)'%3E%3Cpath d='M46 16h30l-9 23H37z'/%3E%3Cpath d='M78 16h30l-9 23H69z'/%3E%3Cpath d='M110 16h30l-9 23h-30z'/%3E%3C/g%3E%3C/svg%3E")}
 .mhdr-logo{height:30px;object-fit:contain}
 .mhdr-fb{color:var(--text);font-size:15px;font-weight:800;display:none}.mhdr-fb span{color:var(--orange)}
 .mhdr-r{display:flex;gap:8px;align-items:center}
+.mhdr-logo,.mhdr-fb,.mhdr-r{position:relative;z-index:1}
 .ldot{width:7px;height:7px;border-radius:50%;background:#22c55e;animation:pulse 2s infinite}
+@media (max-width:420px){.mhdr::after{width:116px;height:38px;transform:translate(-50%,-48%)}}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 .subbar{background:var(--orange-d);padding:4px 16px 6px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;border-bottom:none}
 .subbar span{font-size:11px;color:rgba(255,255,255,.8)}
@@ -305,17 +308,13 @@ textarea.fi{min-height:80px;resize:vertical}
 
 /* ── NOTES ── */
 .notes-list{flex:1;overflow-y:auto;padding:12px 16px 16px;display:flex;flex-direction:column;gap:10px;-webkit-overflow-scrolling:touch}
-.note-card{background:var(--bg);border:1px solid var(--border);border-radius:var(--rl);padding:14px;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.06);border-left:4px solid var(--orange);position:relative}
-.note-card.type-call{border-left-color:#3b82f6}
-.note-card.type-email{border-left-color:#8b5cf6}
-.note-card.type-material{border-left-color:#22c55e}
-.note-card.type-general{border-left-color:var(--orange)}
+.note-card{background:var(--bg);border:1px solid var(--border);border-radius:var(--rl);padding:14px;box-shadow:0 1px 4px rgba(0,0,0,.06);border-left:4px solid var(--orange);position:relative;display:flex;gap:12px;align-items:flex-start}
+.note-card.done{border-left-color:var(--done-txt);background:var(--bg2);opacity:.75}
+.note-card.done .note-title,.note-card.done .note-body{text-decoration:line-through;color:var(--text3)}
 .note-card:active{opacity:.85}
-.note-type-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;display:inline-block;margin-bottom:6px}
-.note-type-call{background:#dbeafe;color:#1d4ed8}
-.note-type-email{background:#ede9fe;color:#6d28d9}
-.note-type-material{background:#dcfce7;color:#15803d}
-.note-type-general{background:var(--orange-light);color:var(--orange-d)}
+.note-check{width:28px;height:28px;border-radius:50%;border:2px solid var(--border2);background:var(--bg2);font-size:14px;cursor:pointer;font-family:inherit;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:var(--text3)}
+.note-check.done{border-color:var(--done-txt);background:var(--done-bg);color:var(--done-txt)}
+.note-content{flex:1;min-width:0}
 .note-title{font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px}
 .note-body{font-size:13px;color:var(--text2);line-height:1.6;white-space:pre-wrap}
 .note-footer{display:flex;justify-content:space-between;align-items:center;margin-top:10px}
@@ -323,13 +322,6 @@ textarea.fi{min-height:80px;resize:vertical}
 .note-actions{display:flex;gap:6px}
 .note-del{padding:4px 10px;border-radius:99px;border:1.5px solid var(--red-txt);background:var(--red-bg);color:var(--red-txt);font-size:11px;font-weight:600;cursor:pointer;font-family:inherit}
 .note-edit{padding:4px 10px;border-radius:99px;border:1.5px solid var(--border2);background:var(--bg2);color:var(--text);font-size:11px;font-weight:600;cursor:pointer;font-family:inherit}
-.note-type-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
-.ntype-opt{padding:10px 4px;border:1.5px solid var(--border2);border-radius:var(--r);cursor:pointer;text-align:center;font-size:11px;font-weight:600;color:var(--text2);background:var(--bg);user-select:none}
-.ntype-opt .ntype-icon{font-size:20px;display:block;margin-bottom:3px}
-.ntype-opt.on.call{border-color:#3b82f6;background:#dbeafe;color:#1d4ed8}
-.ntype-opt.on.email{border-color:#8b5cf6;background:#ede9fe;color:#6d28d9}
-.ntype-opt.on.material{border-color:#22c55e;background:#dcfce7;color:#15803d}
-.ntype-opt.on.general{border-color:var(--orange);background:var(--orange-light);color:var(--orange-d)}
 
 @media print{
   .app,.tabs,.inv-action-bar,.shdr{display:none!important}
@@ -486,13 +478,6 @@ textarea.fi{min-height:80px;resize:vertical}
     </div>
   </div>
   <div class="subbar"><span id="notes-hdrsub">Notes</span><button onclick="renderNotesList()">Refresh</button></div>
-  <div style="display:flex;gap:6px;padding:10px 16px 4px;overflow-x:auto;scrollbar-width:none;flex-shrink:0">
-    <button class="fpill on" id="nfilt-all" onclick="setNoteFilter('all',this)">All</button>
-    <button class="fpill" id="nfilt-call" onclick="setNoteFilter('call',this)">📞 Call</button>
-    <button class="fpill" id="nfilt-email" onclick="setNoteFilter('email',this)">✉️ Email</button>
-    <button class="fpill" id="nfilt-material" onclick="setNoteFilter('material',this)">🔧 Materials</button>
-    <button class="fpill" id="nfilt-general" onclick="setNoteFilter('general',this)">📝 General</button>
-  </div>
   <div class="notes-list" id="notes-list"><div class="empty">No notes yet.<br><br>Tap + to add your first note.</div></div>
   <div class="tabs">
     <button class="tab" onclick="switchTab('contacts',this)"><span class="ticon">👥</span>Customers</button>
@@ -510,15 +495,6 @@ textarea.fi{min-height:80px;resize:vertical}
     <button class="obtn" id="note-savebtn" onclick="saveNote()">Save</button>
   </div>
   <div class="fbody" style="background:var(--bg2)">
-    <div class="fg">
-      <label>Type</label>
-      <div class="note-type-grid">
-        <div class="ntype-opt general on" id="nopt-general" onclick="selectNoteType('general')"><span class="ntype-icon">📝</span>General</div>
-        <div class="ntype-opt call" id="nopt-call" onclick="selectNoteType('call')"><span class="ntype-icon">📞</span>Call</div>
-        <div class="ntype-opt email" id="nopt-email" onclick="selectNoteType('email')"><span class="ntype-icon">✉️</span>Email</div>
-        <div class="ntype-opt material" id="nopt-material" onclick="selectNoteType('material')"><span class="ntype-icon">🔧</span>Materials</div>
-      </div>
-    </div>
     <div class="fg"><label>Title</label><input class="fi" id="note-title" type="text" placeholder="Note title..."/></div>
     <div class="fg"><label>Note</label><textarea class="fi" id="note-body" placeholder="Write your note here..." style="min-height:160px"></textarea></div>
     <div class="fg"><label>Related Customer (optional)</label>
@@ -1884,7 +1860,7 @@ async function deleteSchedJob(id){
 /* ══════════════════════════════
    NOTES SYSTEM
 ══════════════════════════════ */
-let notes={}, noteFilter='all', noteEditId=null, noteSelCustomer=null, noteType='general';
+let notes={}, noteEditId=null, noteSelCustomer=null;
 
 function initNotes(){
   db.ref('notes').on('value',s=>{
@@ -1894,32 +1870,27 @@ function initNotes(){
   });
 }
 
-function setNoteFilter(f,btn){
-  noteFilter=f;
-  document.querySelectorAll('[id^="nfilt-"]').forEach(b=>b.classList.remove('on'));
-  btn.classList.add('on');
-  renderNotesList();
-}
-
 function renderNotesList(){
-  const all=Object.values(notes).filter(n=>noteFilter==='all'||n.type===noteFilter)
-    .sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
-  document.getElementById('notes-hdrsub').textContent=Object.keys(notes).length+' notes';
+  const all=Object.values(notes).sort((a,b)=>{
+    if(!!a.done!==!!b.done) return a.done?1:-1;
+    return new Date(b.createdAt)-new Date(a.createdAt);
+  });
+  document.getElementById('notes-hdrsub').textContent=all.length+' notes';
   const el=document.getElementById('notes-list');
-  if(!all.length){el.innerHTML=`<div class="empty">${Object.keys(notes).length===0?'No notes yet.<br><br>Tap + to add your first note.':'No notes in this category.'}</div>`;return;}
-  const typeLabel={general:'General',call:'Call',email:'Email',material:'Materials'};
-  const typeClass={general:'note-type-general',call:'note-type-call',email:'note-type-email',material:'note-type-material'};
+  if(!all.length){el.innerHTML='<div class="empty">No notes yet.<br><br>Tap + to add your first note.</div>';return;}
   el.innerHTML=all.map(n=>`
-    <div class="note-card type-${n.type||'general'}">
-      <span class="note-type-badge ${typeClass[n.type||'general']}">${n.type==='call'?'📞':n.type==='email'?'✉️':n.type==='material'?'🔧':'📝'} ${typeLabel[n.type||'general']}</span>
-      ${n.customerName?`<div style="font-size:11px;color:var(--orange);font-weight:600;margin-bottom:4px">👤 ${n.customerName}</div>`:''}
-      ${n.title?`<div class="note-title">${n.title}</div>`:''}
-      <div class="note-body">${n.body||''}</div>
-      <div class="note-footer">
-        <span class="note-date">${new Date(n.createdAt).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'})}</span>
-        <div class="note-actions">
-          <button class="note-edit" onclick="editNote('${n.id}')">Edit</button>
-          <button class="note-del" onclick="deleteNote('${n.id}')">Delete</button>
+    <div class="note-card${n.done?' done':''}">
+      <button class="note-check${n.done?' done':''}" onclick="toggleNoteDone('${n.id}')">${n.done?'✓':''}</button>
+      <div class="note-content">
+        ${n.customerName?`<div style="font-size:11px;color:var(--orange);font-weight:600;margin-bottom:4px">👤 ${n.customerName}</div>`:''}
+        ${n.title?`<div class="note-title">${n.title}</div>`:''}
+        <div class="note-body">${n.body||''}</div>
+        <div class="note-footer">
+          <span class="note-date">${new Date(n.createdAt).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</span>
+          <div class="note-actions">
+            <button class="note-edit" onclick="editNote('${n.id}')">Edit</button>
+            <button class="note-del" onclick="deleteNote('${n.id}')">Delete</button>
+          </div>
         </div>
       </div>
     </div>`).join('');
@@ -1932,11 +1903,9 @@ function showNoteForm(id){
   document.getElementById('note-body').value='';
   document.getElementById('note-customer-search').value='';
   document.getElementById('note-customer-results').style.display='none';
-  selectNoteType('general');
   if(id){
     const n=notes[id];
     if(n){
-      selectNoteType(n.type||'general');
       document.getElementById('note-title').value=n.title||'';
       document.getElementById('note-body').value=n.body||'';
       if(n.customerName) document.getElementById('note-customer-search').value=n.customerName;
@@ -1949,16 +1918,6 @@ function showNoteForm(id){
 }
 
 function editNote(id){showNoteForm(id);}
-
-function selectNoteType(type){
-  noteType=type;
-  ['general','call','email','material'].forEach(t=>{
-    const el=document.getElementById('nopt-'+t);
-    if(el){el.classList.remove('on');el.className=el.className.replace(/\bon\b/,'').trim();}
-  });
-  const el=document.getElementById('nopt-'+type);
-  if(el) el.classList.add('on');
-}
 
 function renderNoteCustomerSearch(){
   const s=document.getElementById('note-customer-search').value.toLowerCase();
@@ -1983,10 +1942,10 @@ async function saveNote(){
   if(!body&&!title){toast('Please write something!');return;}
   const btn=document.getElementById('note-savebtn');btn.disabled=true;
   const n={
-    id:'n_'+Date.now(),type:noteType,title,body,
+    id:'n_'+Date.now(),title,body,
     customerName:noteSelCustomer?fullName(noteSelCustomer):(document.getElementById('note-customer-search').value.trim()||''),
     contactId:noteSelCustomer?.id||null,
-    createdAt:new Date().toISOString()
+    done:false,createdAt:new Date().toISOString()
   };
   try{
     await db.ref('notes/'+n.id).set(n);
@@ -2000,9 +1959,15 @@ async function updateNote(id){
   if(!body&&!title){toast('Please write something!');return;}
   const customerName=noteSelCustomer?fullName(noteSelCustomer):(document.getElementById('note-customer-search').value.trim()||notes[id]?.customerName||'');
   try{
-    await db.ref('notes/'+id).update({type:noteType,title,body,customerName,updatedAt:new Date().toISOString()});
+    await db.ref('notes/'+id).update({title,body,customerName,updatedAt:new Date().toISOString()});
     toast('Note updated!');showV('view-notes');
   }catch(e){toast('Error: '+e.message,4000);}
+}
+
+async function toggleNoteDone(id){
+  const done=!notes[id]?.done;
+  try{await db.ref('notes/'+id+'/done').set(done);}
+  catch(e){toast('Error: '+e.message,4000);}
 }
 
 async function deleteNote(id){
