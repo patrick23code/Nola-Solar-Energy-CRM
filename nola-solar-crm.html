@@ -387,7 +387,7 @@ textarea.fi{min-height:80px;resize:vertical}
     </div>
   </div>
   <div class="subbar"><span id="inv-hdrsub">Invoices</span><button onclick="loadInvoices()">Sync</button></div>
-  <div class="clist" id="inv-clist"><div class="empty">No invoices or quotes yet.<br><br>Tap + to create your first document.</div></div>
+  <div class="clist" id="inv-clist"><div class="empty">No invoices or receipts yet.<br><br>Tap + to create your first document.</div></div>
   <div class="tabs">
     <button class="tab" onclick="switchTab('contacts',this)"><span class="ticon">👥</span>Customers</button>
     <button class="tab on" onclick="switchTab('invoices',this)"><span class="ticon">🧾</span>Invoices</button>
@@ -576,7 +576,7 @@ textarea.fi{min-height:80px;resize:vertical}
 <div class="view" id="view-invform">
   <div class="shdr">
     <button class="bbtn" onclick="showV('view-invlist')">← Cancel</button>
-    <span class="shdr-t" id="invf-title">New Invoice / Quote</span>
+    <span class="shdr-t" id="invf-title">New Invoice</span>
     <button class="obtn" id="inv-savebtn" onclick="saveInvoice()">Preview</button>
   </div>
   <div class="fbody">
@@ -602,19 +602,21 @@ textarea.fi{min-height:80px;resize:vertical}
     <div class="r2">
       <div class="fg">
         <label>Document Type</label>
-        <select class="fi" id="inv-kind">
-          <option value="quote">Quote</option>
+        <select class="fi" id="inv-kind" onchange="syncInvDocumentType()">
           <option value="invoice">Invoice</option>
+          <option value="receipt">Receipt</option>
         </select>
       </div>
-      <div class="fg"><label>Document #</label><input class="fi" id="inv-num" type="number" placeholder="29"/></div>
+      <div class="fg"><label id="inv-num-label">Invoice #</label><input class="fi" id="inv-num" type="number" placeholder="29"/></div>
     </div>
     <div class="r2">
-      <div class="fg"><label>Issue Date</label><input class="fi" id="inv-date" type="date"/></div>
-      <div class="fg"><label>Valid Until</label><input class="fi" id="inv-valid-until" type="date"/></div>
+      <div class="fg"><label id="inv-date-label">Issue Date</label><input class="fi" id="inv-date" type="date"/></div>
+      <div class="fg" id="inv-valid-wrap"><label>Valid Until</label><input class="fi" id="inv-valid-until" type="date"/></div>
     </div>
-    <div class="fg"><label>Project / Job Title</label><input class="fi" id="inv-project" type="text" placeholder="Roof repair, panel cleaning, inverter replacement..."/></div>
-    <div class="fg"><label>Scope of Work</label><textarea class="fi" id="inv-scope" placeholder="Explain the work to be done, materials, labor, exclusions, site details..."></textarea></div>
+    <div id="invoice-only-fields">
+      <div class="fg"><label>Project / Job Title</label><input class="fi" id="inv-project" type="text" placeholder="Roof repair, panel cleaning, inverter replacement..."/></div>
+      <div class="fg"><label>Scope of Work</label><textarea class="fi" id="inv-scope" placeholder="Explain the work to be done, materials, labor, exclusions, site details..."></textarea></div>
+    </div>
     <div class="fg">
       <div class="inv-section-title">Line Items</div>
       <div class="line-items" id="line-items"></div>
@@ -638,23 +640,47 @@ textarea.fi{min-height:80px;resize:vertical}
       <div id="inv-tax-row" style="display:none;justify-content:space-between;font-size:13px;color:var(--text2)"><span id="inv-tax-label">Tax (10%)</span><span id="inv-tax-display">$0.00</span></div>
       <div style="display:flex;justify-content:space-between;font-size:16px;font-weight:800;color:var(--text);border-top:.5px solid var(--border2);padding-top:8px;margin-top:2px"><span>Total</span><span id="inv-total-display">$0.00</span></div>
     </div>
-    <div class="r2">
-      <div class="fg">
-        <label>Status</label>
-        <select class="fi" id="inv-status">
-          <option value="draft">Draft</option>
-          <option value="sent">Sent</option>
-          <option value="approved">Approved</option>
-          <option value="paid">Paid</option>
-          <option value="rejected">Rejected</option>
-        </select>
+    <div id="invoice-only-meta">
+      <div class="r2">
+        <div class="fg">
+          <label>Status</label>
+          <select class="fi" id="inv-status">
+            <option value="draft">Draft</option>
+            <option value="sent">Sent</option>
+            <option value="approved">Approved</option>
+            <option value="paid">Paid</option>
+            <option value="rejected">Rejected</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label>Payment Terms</label>
+          <input class="fi" id="inv-payment-terms" type="text" placeholder="50% deposit, balance on completion"/>
+        </div>
       </div>
-      <div class="fg">
-        <label>Payment Terms</label>
-        <input class="fi" id="inv-payment-terms" type="text" placeholder="50% deposit, balance on completion"/>
+      <div class="fg"><label>Notes / Terms</label><textarea class="fi" id="inv-notes" placeholder="Warranty details, timeline, exclusions, approval notes..."></textarea></div>
+    </div>
+    <div id="receipt-only-fields" style="display:none">
+      <div class="r2">
+        <div class="fg">
+          <label>Payment Method</label>
+          <select class="fi" id="inv-payment-method">
+            <option value="Check">Check</option>
+            <option value="Cash">Cash</option>
+            <option value="Credit Card">Credit Card</option>
+            <option value="Zelle">Zelle</option>
+            <option value="Venmo">Venmo</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label>Status</label>
+          <select class="fi" id="inv-receipt-status">
+            <option value="paid">Paid</option>
+            <option value="unpaid">Unpaid</option>
+          </select>
+        </div>
       </div>
     </div>
-    <div class="fg"><label>Notes / Terms</label><textarea class="fi" id="inv-notes" placeholder="Warranty details, timeline, exclusions, approval notes..."></textarea></div>
   </div>
 </div>
 
@@ -683,7 +709,7 @@ const CATM={residential:'Residential',commercial:'Commercial'};
 const STATUSES=['new','pending','inprocess','completed'];
 const STATUS_LABEL={new:'New',pending:'Pending',inprocess:'In Process',completed:'Completed'};
 const STATUS_ICON={new:'✦',pending:'⏳',inprocess:'⚡',completed:'✔'};
-const INV_KIND_LABEL={quote:'Quote',invoice:'Invoice',receipt:'Receipt'};
+const INV_KIND_LABEL={invoice:'Invoice',receipt:'Receipt'};
 const INV_STATUS_LABEL={draft:'Draft',sent:'Sent',approved:'Approved',paid:'Paid',rejected:'Rejected',unpaid:'Unpaid'};
 const HARDCODED_CFG={apiKey:'AIzaSyBdOfax4NY7PhyyFhpy7ItivkUID0ksMyo',databaseURL:'https://nolacrm-85b09-default-rtdb.firebaseio.com',projectId:'nolacrm-85b09',appId:'1:107492211574:web:7ed2a2dd40d8be4707d857',authDomain:'nolacrm-85b09.firebaseapp.com'};
 
@@ -719,6 +745,7 @@ window.addEventListener('DOMContentLoaded',()=>{
   calSelDate=`${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`;
   document.getElementById('inv-date').value=new Date().toISOString().split('T')[0];
   document.getElementById('inv-valid-until').value=getDateOffset(7);
+  syncInvDocumentType();
 });
 
 function sync(){
@@ -761,7 +788,10 @@ function getDateOffset(days){
 }
 function formatInvDate(date){return date?new Date(date+'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'';}
 function formatInvText(text){return (text||'').replace(/\n/g,'<br>');}
-function getInvoiceKind(inv){return inv?.kind||(inv?.payment?'receipt':'quote');}
+function getInvoiceKind(inv){
+  const kind=inv?.kind||(inv?.payment?'receipt':'invoice');
+  return kind==='quote'?'invoice':kind;
+}
 function getInvoiceLabel(invOrKind){
   const kind=typeof invOrKind==='string'?invOrKind:getInvoiceKind(invOrKind);
   return INV_KIND_LABEL[kind]||'Document';
@@ -840,7 +870,7 @@ function renderDet(c){
       ${c.phone?`<a class="abtn primary" href="tel:${c.phone}">Call</a>`:'<div></div>'}
       ${c.email?`<a class="abtn" href="mailto:${c.email}">Email</a>`:'<div></div>'}
     </div>
-    <button class="abtn inv" style="width:100%;margin-bottom:14px" onclick="showInvForm('${c.id}')">🧾 Create Invoice / Quote</button>
+    <button class="abtn inv" style="width:100%;margin-bottom:14px" onclick="showInvForm('${c.id}')">🧾 Create Invoice / Receipt</button>
     <div class="psec">${gal}<label class="padd" onclick="document.getElementById('photo-input').click()">+ Add Photo${pks.length?' ('+pks.length+' photos)':''}</label></div>
     <div class="icard">${rows.map(r=>`<div class="irow"><div class="ilbl">${r.l}</div><div class="ival">${r.v}</div></div>`).join('')}</div>
     <div class="arow">
@@ -960,13 +990,26 @@ async function delPhoto(cid,pk){
    INVOICE SYSTEM
 ══════════════════════════════ */
 
+function syncInvDocumentType(){
+  const kind=document.getElementById('inv-kind').value==='receipt'?'receipt':'invoice';
+  const invoiceMode=kind==='invoice';
+  document.getElementById('invoice-only-fields').style.display=invoiceMode?'block':'none';
+  document.getElementById('invoice-only-meta').style.display=invoiceMode?'block':'none';
+  document.getElementById('receipt-only-fields').style.display=invoiceMode?'none':'block';
+  document.getElementById('inv-valid-wrap').style.display=invoiceMode?'block':'none';
+  document.getElementById('invf-title').textContent=invoiceMode?'New Invoice':'New Receipt';
+  document.getElementById('inv-num-label').textContent=(invoiceMode?'Invoice':'Receipt')+' #';
+  document.getElementById('inv-date-label').textContent=invoiceMode?'Issue Date':'Date';
+}
+
 function showInvForm(contactId){
   invEditId=null;invSelectedContact=null;lineItems=[];invLockedContactId=null;currentInvData=null;
-  document.getElementById('invf-title').textContent='New Invoice / Quote';
-  document.getElementById('inv-kind').value='quote';
+  document.getElementById('inv-kind').value='invoice';
   document.getElementById('inv-date').value=new Date().toISOString().split('T')[0];
   document.getElementById('inv-valid-until').value=getDateOffset(7);
   document.getElementById('inv-status').value='draft';
+  document.getElementById('inv-payment-method').value='Check';
+  document.getElementById('inv-receipt-status').value='paid';
   document.getElementById('inv-payment-terms').value='50% deposit, balance due on completion';
   document.getElementById('inv-project').value='';
   document.getElementById('inv-scope').value='';
@@ -990,6 +1033,7 @@ function showInvForm(contactId){
   document.getElementById('inv-num').value=nextNum;
   const firstLineDesc=invSelectedContact?.projectName||(invSelectedContact?.jobTypes||[]).join(', ')||'';
   lineItems=[{desc:firstLineDesc,qty:1,price:''}];
+  syncInvDocumentType();
   renderLineItems();
   renderContactPicker();
   renderInvBillToMode();
@@ -1144,6 +1188,7 @@ function buildInvHTML(inv, logoSrc){
   const kind=getInvoiceKind(inv);
   const docLabel=getInvoiceLabel(kind);
   const watermark=getInvoiceWatermark(inv);
+  const receiptMode=kind==='receipt';
   const items=inv.lineItems||[];
   const subtotal=Number.isFinite(parseFloat(inv.subtotal))?parseFloat(inv.subtotal):items.reduce((s,i)=>s+(parseFloat(i.amount)||0),0);
   const taxAmt=Number.isFinite(parseFloat(inv.taxAmt))?parseFloat(inv.taxAmt):0;
@@ -1151,8 +1196,12 @@ function buildInvHTML(inv, logoSrc){
   const taxRate=Number.isFinite(parseFloat(inv.taxRate))?parseFloat(inv.taxRate):10;
   const issueDate=formatInvDate(inv.date);
   const validUntil=formatInvDate(inv.validUntil);
-  const notesText=formatInvText(inv.notes||(kind==='quote'?'Pricing is based on the scope of work listed below.':'Thank you for choosing Nola Solar Energy.'));
-  const termsText=formatInvText(inv.paymentTerms||(inv.payment?`Paid by ${inv.payment}`:(kind==='quote'?'Pricing valid until the expiration date shown above.':'Payment due per agreed terms.')));
+  const notesText=formatInvText(receiptMode
+    ? (inv.notes||'Thank you for choosing Nola Solar Energy.\nWe appreciate your business.')
+    : (inv.notes||'Pricing is based on the scope of work listed below.'));
+  const termsText=formatInvText(receiptMode
+    ? `Paid by ${inv.payment||'Check'}`
+    : (inv.paymentTerms||'Payment due per agreed terms.'));
   return`<div class="inv-preview-page">
     <div class="inv-pg-header">
       <div class="inv-pg-header-left">
@@ -1169,19 +1218,19 @@ function buildInvHTML(inv, logoSrc){
         <div class="inv-word">${docLabel.toUpperCase()}</div>
         <div class="inv-number">#${inv.number||'--'}</div>
         <div class="inv-dates">
-          <div class="inv-date-row"><span class="inv-date-lbl">Issue Date:</span><span class="inv-date-val">${issueDate}</span></div>
-          ${validUntil?`<div class="inv-date-row"><span class="inv-date-lbl">Valid Until:</span><span class="inv-date-val">${validUntil}</span></div>`:''}
-          <div class="inv-date-row"><span class="inv-date-lbl">Status:</span><span class="inv-date-val">${getInvoiceStatusLabel(inv.status)}</span></div>
+          <div class="inv-date-row"><span class="inv-date-lbl">${receiptMode?'Date':'Issue Date'}:</span><span class="inv-date-val">${issueDate}</span></div>
+          ${!receiptMode&&validUntil?`<div class="inv-date-row"><span class="inv-date-lbl">Valid Until:</span><span class="inv-date-val">${validUntil}</span></div>`:''}
+          ${!receiptMode?`<div class="inv-date-row"><span class="inv-date-lbl">Status:</span><span class="inv-date-val">${getInvoiceStatusLabel(inv.status)}</span></div>`:''}
         </div>
       </div>
     </div>
     <div class="inv-divider"></div>
     <div class="inv-billto">
-      <div class="inv-billto-lbl">${kind==='quote'?'Prepared For':'Bill To'}</div>
+      <div class="inv-billto-lbl">Bill To</div>
       <div class="inv-billto-name">${inv.clientName||''}</div>
       <div class="inv-billto-detail">${inv.clientAddress||''}</div>
     </div>
-    ${(inv.projectName||inv.scope)?`<div class="inv-project-wrap">
+    ${!receiptMode&&(inv.projectName||inv.scope)?`<div class="inv-project-wrap">
       <div class="inv-project-lbl">Project / Scope</div>
       ${inv.projectName?`<div class="inv-project-title">${inv.projectName}</div>`:''}
       ${inv.scope?`<div class="inv-project-scope">${formatInvText(inv.scope)}</div>`:''}
@@ -1211,7 +1260,7 @@ function buildInvHTML(inv, logoSrc){
     </div>
     <div class="inv-footer">
       <div class="inv-footer-terms">
-        <span class="inv-tc-lbl">Payment / Terms</span>
+        <span class="inv-tc-lbl">${receiptMode?'Terms &amp; Conditions':'Payment / Terms'}</span>
         <span class="inv-tc-val">${termsText}</span>
       </div>
     </div>
@@ -1221,11 +1270,15 @@ function buildInvHTML(inv, logoSrc){
 function saveInvoice(){
   const client=getInvClientInfo();
   if(!client.name){toast('Please select or enter a client name');return;}
-  const projectName=document.getElementById('inv-project').value.trim();
-  const scope=document.getElementById('inv-scope').value.trim();
-  const notes=document.getElementById('inv-notes').value.trim();
-  const paymentTerms=document.getElementById('inv-payment-terms').value.trim();
-  if(!projectName&&!scope){toast('Add a project title or scope of work');return;}
+  const kind=document.getElementById('inv-kind').value==='receipt'?'receipt':'invoice';
+  const invoiceMode=kind==='invoice';
+  const projectName=invoiceMode?document.getElementById('inv-project').value.trim():'';
+  const scope=invoiceMode?document.getElementById('inv-scope').value.trim():'';
+  const notes=invoiceMode?document.getElementById('inv-notes').value.trim():'';
+  const paymentTerms=invoiceMode?document.getElementById('inv-payment-terms').value.trim():'';
+  const payment=invoiceMode?'':document.getElementById('inv-payment-method').value;
+  const status=invoiceMode?document.getElementById('inv-status').value:document.getElementById('inv-receipt-status').value;
+  if(invoiceMode&&!projectName&&!scope){toast('Add a project title or scope of work');return;}
   const items=lineItems.filter(i=>i.desc||(parseFloat(i.price)||0)>0).map(i=>({
     desc:i.desc||'',
     qty:parseFloat(i.qty)||1,
@@ -1240,15 +1293,16 @@ function saveInvoice(){
   const now=new Date().toISOString();
   const inv={
     id:invEditId||('inv_'+Date.now()),
-    kind:document.getElementById('inv-kind').value,
+    kind,
     number:document.getElementById('inv-num').value,
     date:document.getElementById('inv-date').value,
-    validUntil:document.getElementById('inv-valid-until').value,
+    validUntil:invoiceMode?document.getElementById('inv-valid-until').value:'',
     projectName,scope,notes,paymentTerms,
     clientName:client.name,clientAddress:client.address,
     contactId:invSelectedContact?.id||null,
     lineItems:items,
-    status:document.getElementById('inv-status').value,
+    payment,
+    status,
     taxOn,taxRate,taxAmt,subtotal,total:subtotal+taxAmt,
     createdAt:currentInvData?.createdAt||now,
     updatedAt:now
@@ -1278,7 +1332,7 @@ function renderInvList(){
   const all=Object.values(invoices).sort((a,b)=>((parseInt(b.number)||0)-(parseInt(a.number)||0))||new Date(b.updatedAt||b.createdAt||0)-new Date(a.updatedAt||a.createdAt||0));
   if(!all.length){
     document.getElementById('inv-hdrsub').textContent='0 documents';
-    el.innerHTML='<div class="empty">No invoices or quotes yet.<br><br>Tap + to create your first document.</div>';
+    el.innerHTML='<div class="empty">No invoices or receipts yet.<br><br>Tap + to create your first document.</div>';
     return;
   }
   const total=all.reduce((sum,inv)=>{
@@ -1288,14 +1342,16 @@ function renderInvList(){
   document.getElementById('inv-hdrsub').textContent=all.length+' documents • $'+total.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})+' total';
   el.innerHTML=all.map(inv=>{
     const t=Number.isFinite(parseFloat(inv.total))?parseFloat(inv.total):((inv.lineItems||[]).reduce((s,i)=>s+(parseFloat(i.amount)||0),0)+(parseFloat(inv.taxAmt)||0));
-    const meta=[formatInvDate(inv.date),inv.projectName].filter(Boolean).join(' • ');
+    const kind=getInvoiceKind(inv);
+    const meta=[formatInvDate(inv.date),kind==='receipt'?(inv.payment||''):inv.projectName].filter(Boolean).join(' • ');
     const scopeRaw=(inv.scope||'').replace(/\s+/g,' ').trim();
     const scopePreview=scopeRaw.length>82?scopeRaw.slice(0,79)+'...':scopeRaw;
+    const fallbackMeta=kind==='receipt'?'Open to view payment details':'No project details added';
     return`<div class="inv-card" onclick="previewSavedInv('${inv.id}')">
       <div class="inv-card-l">
         <div class="invnum">${getInvoiceLabel(inv)} #${inv.number||'--'}</div>
         <div class="invname">${inv.clientName||'Unnamed Client'}</div>
-        <div class="invdate">${meta||scopePreview||'No project details added'}</div>
+        <div class="invdate">${meta||scopePreview||fallbackMeta}</div>
       </div>
       <div class="inv-card-r">
         <div class="invamt">$${t.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}</div>
@@ -1749,7 +1805,6 @@ async function updateSchedJob(id){
 async function markJobStatus(id, status){
   try{
     await db.ref('schedJobs/'+id+'/status').set(status);
-    toast(status==='completed'?'Marked as completed!':'Marked as incomplete');
   }catch(e){toast('Error: '+e.message,4000);}
 }
 
