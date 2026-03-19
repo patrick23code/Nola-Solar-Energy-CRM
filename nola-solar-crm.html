@@ -175,6 +175,10 @@ textarea.fi{min-height:80px;resize:vertical}
 .inv-card-r{text-align:right}
 .inv-card-r .invamt{font-size:18px;font-weight:700;color:var(--text)}
 .inv-status{font-size:10px;padding:2px 8px;border-radius:99px;font-weight:700;margin-top:4px;display:inline-block}
+.inv-status.draft{background:var(--bg3);color:var(--text2)}
+.inv-status.sent{background:#dbeafe;color:#1d4ed8}
+.inv-status.approved{background:#dcfce7;color:#166534}
+.inv-status.rejected{background:#fee2e2;color:#b91c1c}
 .inv-status.paid{background:#f0fdf4;color:#166534}
 .inv-status.unpaid{background:#fefce8;color:#854d0e}
 
@@ -222,6 +226,10 @@ textarea.fi{min-height:80px;resize:vertical}
 .inv-billto-lbl{font-size:10px;font-weight:800;color:#6b9fd4;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}
 .inv-billto-name{font-size:15px;font-weight:700;color:#111;margin-bottom:3px}
 .inv-billto-detail{font-size:12px;color:#555;line-height:1.6}
+.inv-project-wrap{padding:0 32px 14px}
+.inv-project-lbl{font-size:10px;font-weight:800;color:#6b9fd4;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}
+.inv-project-title{font-size:15px;font-weight:700;color:#111;margin-bottom:6px}
+.inv-project-scope{font-size:12px;color:#555;line-height:1.7;white-space:normal}
 .inv-items-wrap{padding:0 32px 12px;position:relative}
 .inv-paid-watermark{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-35deg);font-size:52px;font-weight:900;color:rgba(100,190,160,.18);letter-spacing:.15em;pointer-events:none;user-select:none;border:5px solid rgba(100,190,160,.18);padding:6px 18px;border-radius:8px;white-space:nowrap}
 .inv-items-table{width:100%;border-collapse:collapse;border:1px solid #e8e8e8;border-radius:8px;overflow:hidden}
@@ -364,7 +372,7 @@ textarea.fi{min-height:80px;resize:vertical}
   <div class="clist" id="clist"><div class="empty">Loading...</div></div>
   <div class="tabs">
     <button class="tab on" onclick="switchTab('contacts',this)"><span class="ticon">👥</span>Customers</button>
-    <button class="tab" onclick="switchTab('invoices',this)"><span class="ticon">🧾</span>Receipts</button>
+    <button class="tab" onclick="switchTab('invoices',this)"><span class="ticon">🧾</span>Invoices</button>
     <button class="tab" onclick="switchTab('schedule',this)"><span class="ticon">📅</span>Schedule</button>
     <button class="tab" onclick="switchTab('notes',this)"><span class="ticon">📝</span>Notes</button>
   </div>
@@ -378,11 +386,11 @@ textarea.fi{min-height:80px;resize:vertical}
       <button class="ibtn add" onclick="showInvForm(null)">+</button>
     </div>
   </div>
-  <div class="subbar"><span id="inv-hdrsub">Receipts</span><button onclick="loadInvoices()">Sync</button></div>
-  <div class="clist" id="inv-clist"><div class="empty">No receipts yet.<br><br>Tap + to create your first receipt.</div></div>
+  <div class="subbar"><span id="inv-hdrsub">Invoices</span><button onclick="loadInvoices()">Sync</button></div>
+  <div class="clist" id="inv-clist"><div class="empty">No invoices or quotes yet.<br><br>Tap + to create your first document.</div></div>
   <div class="tabs">
     <button class="tab" onclick="switchTab('contacts',this)"><span class="ticon">👥</span>Customers</button>
-    <button class="tab on" onclick="switchTab('invoices',this)"><span class="ticon">🧾</span>Receipts</button>
+    <button class="tab on" onclick="switchTab('invoices',this)"><span class="ticon">🧾</span>Invoices</button>
     <button class="tab" onclick="switchTab('schedule',this)"><span class="ticon">📅</span>Schedule</button>
     <button class="tab" onclick="switchTab('notes',this)"><span class="ticon">📝</span>Notes</button>
   </div>
@@ -412,7 +420,7 @@ textarea.fi{min-height:80px;resize:vertical}
   </div>
   <div class="tabs">
     <button class="tab" onclick="switchTab('contacts',this)"><span class="ticon">👥</span>Customers</button>
-    <button class="tab" onclick="switchTab('invoices',this)"><span class="ticon">🧾</span>Receipts</button>
+    <button class="tab" onclick="switchTab('invoices',this)"><span class="ticon">🧾</span>Invoices</button>
     <button class="tab on" onclick="switchTab('schedule',this)"><span class="ticon">📅</span>Schedule</button>
     <button class="tab" onclick="switchTab('notes',this)"><span class="ticon">📝</span>Notes</button>
   </div>
@@ -482,7 +490,7 @@ textarea.fi{min-height:80px;resize:vertical}
   <div class="notes-list" id="notes-list"><div class="empty">No notes yet.<br><br>Tap + to add your first note.</div></div>
   <div class="tabs">
     <button class="tab" onclick="switchTab('contacts',this)"><span class="ticon">👥</span>Customers</button>
-    <button class="tab" onclick="switchTab('invoices',this)"><span class="ticon">🧾</span>Receipts</button>
+    <button class="tab" onclick="switchTab('invoices',this)"><span class="ticon">🧾</span>Invoices</button>
     <button class="tab" onclick="switchTab('schedule',this)"><span class="ticon">📅</span>Schedule</button>
     <button class="tab on" onclick="switchTab('notes',this)"><span class="ticon">📝</span>Notes</button>
   </div>
@@ -568,12 +576,12 @@ textarea.fi{min-height:80px;resize:vertical}
 <div class="view" id="view-invform">
   <div class="shdr">
     <button class="bbtn" onclick="showV('view-invlist')">← Cancel</button>
-    <span class="shdr-t" id="invf-title">New Receipt</span>
+    <span class="shdr-t" id="invf-title">New Invoice / Quote</span>
     <button class="obtn" id="inv-savebtn" onclick="saveInvoice()">Preview</button>
   </div>
   <div class="fbody">
     <div class="fg">
-      <div class="inv-section-title">Bill To</div>
+      <div class="inv-section-title">Customer</div>
       <div id="picker-mode-toggle" style="display:flex;gap:8px;margin-bottom:8px">
         <button class="fpill on" id="picker-tab-crm" onclick="switchPickerTab('crm')">From Contacts</button>
         <button class="fpill" id="picker-tab-manual" onclick="switchPickerTab('manual')">Manual Entry</button>
@@ -592,9 +600,21 @@ textarea.fi{min-height:80px;resize:vertical}
       </div>
     </div>
     <div class="r2">
-      <div class="fg"><label>Receipt #</label><input class="fi" id="inv-num" type="number" placeholder="29"/></div>
-      <div class="fg"><label>Date</label><input class="fi" id="inv-date" type="date"/></div>
+      <div class="fg">
+        <label>Document Type</label>
+        <select class="fi" id="inv-kind">
+          <option value="quote">Quote</option>
+          <option value="invoice">Invoice</option>
+        </select>
+      </div>
+      <div class="fg"><label>Document #</label><input class="fi" id="inv-num" type="number" placeholder="29"/></div>
     </div>
+    <div class="r2">
+      <div class="fg"><label>Issue Date</label><input class="fi" id="inv-date" type="date"/></div>
+      <div class="fg"><label>Valid Until</label><input class="fi" id="inv-valid-until" type="date"/></div>
+    </div>
+    <div class="fg"><label>Project / Job Title</label><input class="fi" id="inv-project" type="text" placeholder="Roof repair, panel cleaning, inverter replacement..."/></div>
+    <div class="fg"><label>Scope of Work</label><textarea class="fi" id="inv-scope" placeholder="Explain the work to be done, materials, labor, exclusions, site details..."></textarea></div>
     <div class="fg">
       <div class="inv-section-title">Line Items</div>
       <div class="line-items" id="line-items"></div>
@@ -620,24 +640,21 @@ textarea.fi{min-height:80px;resize:vertical}
     </div>
     <div class="r2">
       <div class="fg">
-        <label>Payment Method</label>
-        <select class="fi" id="inv-payment">
-          <option value="Check">Check</option>
-          <option value="Cash">Cash</option>
-          <option value="Credit Card">Credit Card</option>
-          <option value="Zelle">Zelle</option>
-          <option value="Venmo">Venmo</option>
-          <option value="Other">Other</option>
+        <label>Status</label>
+        <select class="fi" id="inv-status">
+          <option value="draft">Draft</option>
+          <option value="sent">Sent</option>
+          <option value="approved">Approved</option>
+          <option value="paid">Paid</option>
+          <option value="rejected">Rejected</option>
         </select>
       </div>
       <div class="fg">
-        <label>Status</label>
-        <select class="fi" id="inv-paid">
-          <option value="paid">Paid</option>
-          <option value="unpaid">Unpaid</option>
-        </select>
+        <label>Payment Terms</label>
+        <input class="fi" id="inv-payment-terms" type="text" placeholder="50% deposit, balance on completion"/>
       </div>
     </div>
+    <div class="fg"><label>Notes / Terms</label><textarea class="fi" id="inv-notes" placeholder="Warranty details, timeline, exclusions, approval notes..."></textarea></div>
   </div>
 </div>
 
@@ -645,7 +662,7 @@ textarea.fi{min-height:80px;resize:vertical}
 <div class="view" id="view-invpreview">
   <div class="shdr">
     <button class="bbtn" onclick="showV('view-invform')">← Edit</button>
-    <span class="shdr-t">Receipt Preview</span>
+    <span class="shdr-t">Document Preview</span>
     <button class="bbtn" onclick="saveInvoiceFinal()">Save</button>
   </div>
   <div class="inv-preview-body" id="inv-preview-body"></div>
@@ -666,6 +683,8 @@ const CATM={residential:'Residential',commercial:'Commercial'};
 const STATUSES=['new','pending','inprocess','completed'];
 const STATUS_LABEL={new:'New',pending:'Pending',inprocess:'In Process',completed:'Completed'};
 const STATUS_ICON={new:'✦',pending:'⏳',inprocess:'⚡',completed:'✔'};
+const INV_KIND_LABEL={quote:'Quote',invoice:'Invoice',receipt:'Receipt'};
+const INV_STATUS_LABEL={draft:'Draft',sent:'Sent',approved:'Approved',paid:'Paid',rejected:'Rejected',unpaid:'Unpaid'};
 const HARDCODED_CFG={apiKey:'AIzaSyBdOfax4NY7PhyyFhpy7ItivkUID0ksMyo',databaseURL:'https://nolacrm-85b09-default-rtdb.firebaseio.com',projectId:'nolacrm-85b09',appId:'1:107492211574:web:7ed2a2dd40d8be4707d857',authDomain:'nolacrm-85b09.firebaseapp.com'};
 
 let db=null,contacts={},photos={},invoices={},selCat='all',selId=null,editId=null,fCat='residential';
@@ -705,7 +724,7 @@ function sync(){
   document.getElementById('ldot').style.display='inline-block';
   db.ref('contacts').on('value',s=>{contacts=s.val()||{};renderList();document.getElementById('hdrsub').textContent=Object.keys(contacts).length+' contacts • live';});
   db.ref('photos').on('value',s=>{photos=s.val()||{};if(selId&&document.getElementById('view-detail').classList.contains('active')){const c=contacts[selId];if(c)renderDet(c);}renderList();});
-  db.ref('invoices').on('value',s=>{invoices=s.val()||{};renderInvList();document.getElementById('inv-hdrsub').textContent=Object.keys(invoices).length+' receipts';});
+  db.ref('invoices').on('value',s=>{invoices=s.val()||{};renderInvList();});
   initSchedJobs();
   initNotes();
   initEmailList();
@@ -734,6 +753,28 @@ function selCatForm(cat){fCat=cat;document.querySelectorAll('.copt').forEach(e=>
 /* ── Helpers ── */
 function fullName(c){return[c.firstName,c.lastName].filter(Boolean).join(' ')||c.name||'';}
 function initials(c){const n=fullName(c);return n.split(' ').map(x=>x[0]||'').slice(0,2).join('').toUpperCase();}
+function getDateOffset(days){
+  const d=new Date();
+  d.setDate(d.getDate()+days);
+  return d.toISOString().split('T')[0];
+}
+function formatInvDate(date){return date?new Date(date+'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'';}
+function formatInvText(text){return (text||'').replace(/\n/g,'<br>');}
+function getInvoiceKind(inv){return inv?.kind||(inv?.payment?'receipt':'quote');}
+function getInvoiceLabel(invOrKind){
+  const kind=typeof invOrKind==='string'?invOrKind:getInvoiceKind(invOrKind);
+  return INV_KIND_LABEL[kind]||'Document';
+}
+function getInvoiceStatusLabel(status){return INV_STATUS_LABEL[status]||'Draft';}
+function getInvoiceWatermark(inv){
+  if(inv?.status==='paid')return'PAID';
+  if(inv?.status==='approved')return'APPROVED';
+  return'';
+}
+function updateInvPreviewTitle(inv){
+  const el=document.querySelector('#view-invpreview .shdr .shdr-t');
+  if(el)el.textContent=getInvoiceLabel(inv)+' Preview';
+}
 
 /* ── Stats ── */
 function renderStats(){
@@ -1517,8 +1558,8 @@ function renderDayJobs(ds){
         ${j.notes?`<div class="job-slot-addr" style="margin-top:4px;font-style:italic">${j.notes}</div>`:''}
         <div class="job-slot-actions">
           ${st==='completed'
-            ? `<span class="jsa-btn done" style="cursor:default">✔ Completed</span><button class="jsa-btn" onclick="markJobStatus('${j.id}','new')">↩ Undo</button>`
-            : `<button class="jsa-btn done" onclick="markJobStatus('${j.id}','completed')">✔ Done</button>`
+            ? `<button class="jsa-btn done" onclick="markJobStatus('${j.id}','new')">✔ Completed</button>`
+            : `<button class="jsa-btn" onclick="markJobStatus('${j.id}','completed')">○ Mark Complete</button>`
           }
           <button class="jsa-btn" onclick="editSchedJob('${j.id}')">Edit</button>
           <button class="jsa-btn del" onclick="deleteSchedJob('${j.id}')">Delete</button>
