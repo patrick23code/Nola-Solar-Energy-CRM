@@ -48,8 +48,10 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFo
 
 /* MAIN HDR */
 .mhdr{background:var(--orange);padding:14px 16px 12px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;border-bottom:none;box-shadow:0 2px 8px rgba(245,166,35,.3)}
-.mhdr-logo{height:30px;object-fit:contain;animation:logo-spin 12s linear infinite}
-@keyframes logo-spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+.logo-wrap{position:relative;flex-shrink:0;display:inline-flex;align-items:center}
+.mhdr-logo{height:30px;object-fit:contain;display:block;-webkit-mask:linear-gradient(to right,transparent 30px,white 33px);mask:linear-gradient(to right,transparent 30px,white 33px)}
+.logo-icon-spin{position:absolute;left:0;top:0;height:30px;width:30px;object-fit:cover;object-position:left center;animation:icon-spin 10s linear infinite}
+@keyframes icon-spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 .mhdr-fb{color:var(--text);font-size:15px;font-weight:800;display:none}.mhdr-fb span{color:var(--orange)}
 .mhdr-r{display:flex;gap:8px;align-items:center}
 .ldot{width:7px;height:7px;border-radius:50%;background:#22c55e;animation:pulse 2s infinite}
@@ -356,7 +358,10 @@ textarea.fi{min-height:80px;resize:vertical}
 <!-- ═══ LIST VIEW ═══ -->
 <div class="view active" id="view-list">
   <div class="mhdr">
-    <img class="mhdr-logo" src="https://nolasolarenergy.com/wp-content/uploads/2022/06/logotest.png" onerror="this.style.display='none';document.getElementById('mfb').style.display='block'" alt="Nola Solar"/>
+    <div class="logo-wrap">
+      <img class="mhdr-logo" src="https://nolasolarenergy.com/wp-content/uploads/2022/06/logotest.png" onerror="this.parentElement.style.display='none';document.getElementById('mfb').style.display='block'" alt="Nola Solar"/>
+      <img class="logo-icon-spin" src="https://nolasolarenergy.com/wp-content/uploads/2022/06/logotest.png" alt="" aria-hidden="true" onerror="this.style.display='none'"/>
+    </div>
     <div id="mfb" class="mhdr-fb" style="display:none">Nola <span>Solar</span></div>
         <div class="mhdr-r">
       <div class="ldot" id="ldot" style="display:none"></div>
@@ -388,7 +393,10 @@ textarea.fi{min-height:80px;resize:vertical}
 <!-- ═══ INVOICE LIST VIEW ═══ -->
 <div class="view" id="view-invlist">
   <div class="mhdr">
-    <img class="mhdr-logo" src="https://nolasolarenergy.com/wp-content/uploads/2022/06/logotest.png" onerror="this.style.display='none'" alt="Nola Solar"/>
+    <div class="logo-wrap">
+      <img class="mhdr-logo" src="https://nolasolarenergy.com/wp-content/uploads/2022/06/logotest.png" onerror="this.parentElement.style.display='none'" alt="Nola Solar"/>
+      <img class="logo-icon-spin" src="https://nolasolarenergy.com/wp-content/uploads/2022/06/logotest.png" alt="" aria-hidden="true" onerror="this.style.display='none'"/>
+    </div>
         <div class="mhdr-r">
       <button class="ibtn add" onclick="showInvForm(null)">+</button>
     </div>
@@ -406,7 +414,10 @@ textarea.fi{min-height:80px;resize:vertical}
 <!-- ═══ SCHEDULE VIEW ═══ -->
 <div class="view" id="view-schedule">
   <div class="mhdr">
-    <img class="mhdr-logo" src="https://nolasolarenergy.com/wp-content/uploads/2022/06/logotest.png" onerror="this.style.display='none'" alt="Nola Solar"/>
+    <div class="logo-wrap">
+      <img class="mhdr-logo" src="https://nolasolarenergy.com/wp-content/uploads/2022/06/logotest.png" onerror="this.parentElement.style.display='none'" alt="Nola Solar"/>
+      <img class="logo-icon-spin" src="https://nolasolarenergy.com/wp-content/uploads/2022/06/logotest.png" alt="" aria-hidden="true" onerror="this.style.display='none'"/>
+    </div>
         <div class="mhdr-r">
       <button class="ibtn add" onclick="showSchedForm(null)">+</button>
     </div>
@@ -481,7 +492,10 @@ textarea.fi{min-height:80px;resize:vertical}
 <!-- ═══ NOTES VIEW ═══ -->
 <div class="view" id="view-notes">
   <div class="mhdr">
-    <img class="mhdr-logo" src="https://nolasolarenergy.com/wp-content/uploads/2022/06/logotest.png" onerror="this.style.display='none'" alt="Nola Solar"/>
+    <div class="logo-wrap">
+      <img class="mhdr-logo" src="https://nolasolarenergy.com/wp-content/uploads/2022/06/logotest.png" onerror="this.parentElement.style.display='none'" alt="Nola Solar"/>
+      <img class="logo-icon-spin" src="https://nolasolarenergy.com/wp-content/uploads/2022/06/logotest.png" alt="" aria-hidden="true" onerror="this.style.display='none'"/>
+    </div>
         <div class="mhdr-r">
       <button class="ibtn add" onclick="showNoteForm(null)">+</button>
     </div>
@@ -956,7 +970,20 @@ function fillForm(c){
   else{document.getElementById('j-other-chk')?.classList.remove('on');document.getElementById('d_j-other-chk')?.classList.remove('on');document.getElementById('j-other-wrap').style.display='none';document.getElementById('j-other-input').value='';}
   formPhotos=Object.assign({},photos[c.id]||{});renderFormGallery();
 }
-function togJob(j){const k='j_'+j.replace(/[\s\/]/g,'_');document.getElementById(k)?.classList.toggle('on');document.getElementById('d_'+k)?.classList.toggle('on');}
+function syncContactStatusFromJobs(){
+  if(editId)return;
+  const followUpOn=document.getElementById('j_'+('Follow Up').replace(/[\s\/]/g,'_'))?.classList.contains('on');
+  const statusEl=document.getElementById('f-status');
+  if(!statusEl)return;
+  if(followUpOn&&statusEl.value==='new')statusEl.value='followup';
+  else if(!followUpOn&&statusEl.value==='followup')statusEl.value='new';
+}
+function togJob(j){
+  const k='j_'+j.replace(/[\s\/]/g,'_');
+  document.getElementById(k)?.classList.toggle('on');
+  document.getElementById('d_'+k)?.classList.toggle('on');
+  syncContactStatusFromJobs();
+}
 function togOther(){const on=document.getElementById('j-other-chk')?.classList.toggle('on');document.getElementById('d_j-other-chk')?.classList.toggle('on');const w=document.getElementById('j-other-wrap');w.style.display=on?'block':'none';if(!on)document.getElementById('j-other-input').value='';}
 async function saveContact(){
   const projectName=document.getElementById('f-project').value.trim();
@@ -970,7 +997,9 @@ async function saveContact(){
   const now=new Date().toISOString();const id=editId||('c_'+Date.now());
   const ex=editId?contacts[editId]:null;
   const displayName=[fn,ln].filter(Boolean).join(' ')||projectName;
-  const c={id,projectName,firstName:fn,lastName:ln,name:displayName,category:fCat,status:document.getElementById('f-status').value||ex?.status||'new',
+  const manualStatus=document.getElementById('f-status').value||ex?.status||'new';
+  const autoStatus=!editId&&jobTypes.includes('Follow Up')?'followup':manualStatus;
+  const c={id,projectName,firstName:fn,lastName:ln,name:displayName,category:fCat,status:autoStatus,
     phone:document.getElementById('f-phone').value.trim(),email:document.getElementById('f-email').value.trim(),
     address:document.getElementById('f-addr').value.trim(),notes:document.getElementById('f-notes').value.trim(),
     jobTypes,updatedAt:now,createdAt:ex?.createdAt||now};
