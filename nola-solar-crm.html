@@ -48,10 +48,7 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFo
 
 /* MAIN HDR */
 .mhdr{background:var(--orange);padding:14px 16px 12px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;border-bottom:none;box-shadow:0 2px 8px rgba(245,166,35,.3)}
-.logo-wrap{position:relative;flex-shrink:0;display:inline-flex;align-items:center}
-.mhdr-logo{height:30px;object-fit:contain;display:block;-webkit-mask:linear-gradient(to right,transparent 30px,white 33px);mask:linear-gradient(to right,transparent 30px,white 33px)}
-.logo-icon-spin{position:absolute;left:0;top:0;height:30px;width:30px;object-fit:cover;object-position:left center;animation:icon-spin 10s linear infinite}
-@keyframes icon-spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+.mhdr-logo{height:30px;object-fit:contain}
 .mhdr-fb{color:var(--text);font-size:15px;font-weight:800;display:none}.mhdr-fb span{color:var(--orange)}
 .mhdr-r{display:flex;gap:8px;align-items:center}
 .ldot{width:7px;height:7px;border-radius:50%;background:#22c55e;animation:pulse 2s infinite}
@@ -358,10 +355,7 @@ textarea.fi{min-height:80px;resize:vertical}
 <!-- ═══ LIST VIEW ═══ -->
 <div class="view active" id="view-list">
   <div class="mhdr">
-    <div class="logo-wrap">
-      <img class="mhdr-logo" src="https://nolasolarenergy.com/wp-content/uploads/2022/06/logotest.png" onerror="this.parentElement.style.display='none';document.getElementById('mfb').style.display='block'" alt="Nola Solar"/>
-      <img class="logo-icon-spin" src="https://nolasolarenergy.com/wp-content/uploads/2022/06/logotest.png" alt="" aria-hidden="true" onerror="this.style.display='none'"/>
-    </div>
+    <img class="mhdr-logo" src="https://nolasolarenergy.com/wp-content/uploads/2022/06/logotest.png" onerror="this.style.display='none';document.getElementById('mfb').style.display='block'" alt="Nola Solar"/>
     <div id="mfb" class="mhdr-fb" style="display:none">Nola <span>Solar</span></div>
         <div class="mhdr-r">
       <div class="ldot" id="ldot" style="display:none"></div>
@@ -393,10 +387,7 @@ textarea.fi{min-height:80px;resize:vertical}
 <!-- ═══ INVOICE LIST VIEW ═══ -->
 <div class="view" id="view-invlist">
   <div class="mhdr">
-    <div class="logo-wrap">
-      <img class="mhdr-logo" src="https://nolasolarenergy.com/wp-content/uploads/2022/06/logotest.png" onerror="this.parentElement.style.display='none'" alt="Nola Solar"/>
-      <img class="logo-icon-spin" src="https://nolasolarenergy.com/wp-content/uploads/2022/06/logotest.png" alt="" aria-hidden="true" onerror="this.style.display='none'"/>
-    </div>
+    <img class="mhdr-logo" src="https://nolasolarenergy.com/wp-content/uploads/2022/06/logotest.png" onerror="this.style.display='none'" alt="Nola Solar"/>
         <div class="mhdr-r">
       <button class="ibtn add" onclick="showInvForm(null)">+</button>
     </div>
@@ -414,10 +405,7 @@ textarea.fi{min-height:80px;resize:vertical}
 <!-- ═══ SCHEDULE VIEW ═══ -->
 <div class="view" id="view-schedule">
   <div class="mhdr">
-    <div class="logo-wrap">
-      <img class="mhdr-logo" src="https://nolasolarenergy.com/wp-content/uploads/2022/06/logotest.png" onerror="this.parentElement.style.display='none'" alt="Nola Solar"/>
-      <img class="logo-icon-spin" src="https://nolasolarenergy.com/wp-content/uploads/2022/06/logotest.png" alt="" aria-hidden="true" onerror="this.style.display='none'"/>
-    </div>
+    <img class="mhdr-logo" src="https://nolasolarenergy.com/wp-content/uploads/2022/06/logotest.png" onerror="this.style.display='none'" alt="Nola Solar"/>
         <div class="mhdr-r">
       <button class="ibtn add" onclick="showSchedForm(null)">+</button>
     </div>
@@ -492,10 +480,7 @@ textarea.fi{min-height:80px;resize:vertical}
 <!-- ═══ NOTES VIEW ═══ -->
 <div class="view" id="view-notes">
   <div class="mhdr">
-    <div class="logo-wrap">
-      <img class="mhdr-logo" src="https://nolasolarenergy.com/wp-content/uploads/2022/06/logotest.png" onerror="this.parentElement.style.display='none'" alt="Nola Solar"/>
-      <img class="logo-icon-spin" src="https://nolasolarenergy.com/wp-content/uploads/2022/06/logotest.png" alt="" aria-hidden="true" onerror="this.style.display='none'"/>
-    </div>
+    <img class="mhdr-logo" src="https://nolasolarenergy.com/wp-content/uploads/2022/06/logotest.png" onerror="this.style.display='none'" alt="Nola Solar"/>
         <div class="mhdr-r">
       <button class="ibtn add" onclick="showNoteForm(null)">+</button>
     </div>
