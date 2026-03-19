@@ -813,11 +813,13 @@ function initJobs(){
   document.getElementById('jgrid').innerHTML=JOBS.map(j=>{
     const k='j_'+j.replace(/[\s\/]/g,'_');
     return`<div class="jchk" id="${k}" onclick="togJob('${j}')"><div class="jdot" id="d_${k}"></div>${j}</div>`;
-  }).join('');
+  }).join('')+`<div class="jchk" id="j-other-chk" onclick="togOther()" style="grid-column:1/-1"><div class="jdot" id="d_j-other-chk"></div>Other</div><div id="j-other-wrap" style="display:none;grid-column:1/-1;margin-top:-2px"><input class="fi" id="j-other-input" type="text" placeholder="Describe the job type..."/></div>`;
 }
 function clearForm(){
   ['f-project','f-fn','f-ln','f-phone','f-email','f-addr','f-notes'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
   JOBS.forEach(j=>{const k='j_'+j.replace(/[\s\/]/g,'_');document.getElementById(k)?.classList.remove('on');document.getElementById('d_'+k)?.classList.remove('on');});
+  document.getElementById('j-other-chk')?.classList.remove('on');document.getElementById('d_j-other-chk')?.classList.remove('on');
+  document.getElementById('j-other-wrap').style.display='none';document.getElementById('j-other-input').value='';
   formPhotos={};renderFormGallery();
 }
 function fillForm(c){
@@ -829,9 +831,13 @@ function fillForm(c){
   document.getElementById('f-addr').value=c.address||'';
   document.getElementById('f-notes').value=c.notes||'';
   JOBS.forEach(j=>{const k='j_'+j.replace(/[\s\/]/g,'_');const on=(c.jobTypes||[]).includes(j);document.getElementById(k)?.classList.toggle('on',on);document.getElementById('d_'+k)?.classList.toggle('on',on);});
+  const otherJob=(c.jobTypes||[]).find(j=>!JOBS.includes(j));
+  if(otherJob){document.getElementById('j-other-chk')?.classList.add('on');document.getElementById('d_j-other-chk')?.classList.add('on');document.getElementById('j-other-wrap').style.display='block';document.getElementById('j-other-input').value=otherJob;}
+  else{document.getElementById('j-other-chk')?.classList.remove('on');document.getElementById('d_j-other-chk')?.classList.remove('on');document.getElementById('j-other-wrap').style.display='none';document.getElementById('j-other-input').value='';}
   formPhotos=Object.assign({},photos[c.id]||{});renderFormGallery();
 }
 function togJob(j){const k='j_'+j.replace(/[\s\/]/g,'_');document.getElementById(k)?.classList.toggle('on');document.getElementById('d_'+k)?.classList.toggle('on');}
+function togOther(){const on=document.getElementById('j-other-chk')?.classList.toggle('on');document.getElementById('d_j-other-chk')?.classList.toggle('on');const w=document.getElementById('j-other-wrap');w.style.display=on?'block':'none';if(!on)document.getElementById('j-other-input').value='';}
 async function saveContact(){
   const projectName=document.getElementById('f-project').value.trim();
   const fn=document.getElementById('f-fn').value.trim();
@@ -839,6 +845,8 @@ async function saveContact(){
   const btn=document.getElementById('savebtn');btn.disabled=true;btn.textContent='Saving...';
   const ln=document.getElementById('f-ln').value.trim();
   const jobTypes=JOBS.filter(j=>document.getElementById('j_'+j.replace(/[\s\/]/g,'_'))?.classList.contains('on'));
+  const otherVal=document.getElementById('j-other-chk')?.classList.contains('on')?document.getElementById('j-other-input').value.trim():'';
+  if(otherVal)jobTypes.push(otherVal);
   const now=new Date().toISOString();const id=editId||('c_'+Date.now());
   const ex=editId?contacts[editId]:null;
   const c={id,projectName,firstName:fn,lastName:ln,name:fn+(ln?' '+ln:''),category:fCat,status:ex?.status||'new',
