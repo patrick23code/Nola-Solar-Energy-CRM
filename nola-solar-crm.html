@@ -180,7 +180,6 @@ textarea.fi{min-height:80px;resize:vertical}
 .inv-status.approved{background:#dcfce7;color:#166534}
 .inv-status.rejected{background:#fee2e2;color:#b91c1c}
 .inv-status.paid{background:#f0fdf4;color:#166534}
-.inv-status.unpaid{background:#fefce8;color:#854d0e}
 .inv-status-edit{min-width:110px;padding:6px 10px;border:1px solid var(--border2);border-radius:999px;background:var(--bg2);color:var(--text);font-size:11px;font-weight:700;font-family:inherit;cursor:pointer;text-align:left}
 .inv-status-edit:focus{outline:none;border-color:var(--orange)}
 
@@ -335,11 +334,15 @@ textarea.fi{min-height:80px;resize:vertical}
 }
 
 /* ── SOLAR ANIMATION ── */
-.solar-anim{flex:1;display:flex;justify-content:center;align-items:center}
-.solar-grid{display:grid;grid-template-columns:repeat(3,19px);grid-template-rows:repeat(2,13px);gap:3px;position:relative;border-radius:3px;overflow:hidden}
-.solar-grid::after{content:'';position:absolute;inset:0;background:linear-gradient(105deg,transparent 20%,rgba(255,255,255,.65) 50%,transparent 80%);animation:sshine 2.4s ease-in-out infinite;pointer-events:none}
-@keyframes sshine{0%{transform:translateX(-150%)}100%{transform:translateX(250%)}}
-.sp{background:#1565C0;border-radius:1px;background-image:linear-gradient(rgba(144,202,249,.4) 1px,transparent 1px),linear-gradient(90deg,rgba(144,202,249,.4) 1px,transparent 1px);background-size:6.5px 4.5px;box-shadow:inset 0 0 0 .5px rgba(100,181,246,.55)}
+.solar-anim{flex:1;display:flex;justify-content:center;align-items:center;perspective:600px}
+.solar-mount{position:relative;transform:rotateX(38deg) rotateY(-12deg);transform-style:preserve-3d;filter:drop-shadow(4px 10px 14px rgba(0,0,0,.55))}
+.solar-frame{padding:5px 6px;background:linear-gradient(160deg,#2a2a2a,#111);border-radius:4px;box-shadow:inset 0 2px 4px rgba(255,255,255,.08),inset 0 -2px 4px rgba(0,0,0,.4);position:relative}
+.solar-frame::after{content:'';position:absolute;top:0;left:0;right:0;height:40%;background:linear-gradient(to bottom,rgba(255,255,255,.07),transparent);border-radius:4px 4px 0 0;pointer-events:none}
+.solar-grid{display:grid;grid-template-columns:repeat(4,21px);grid-template-rows:repeat(3,13px);gap:2px;position:relative;overflow:hidden;border-radius:2px}
+.solar-grid::after{content:'';position:absolute;inset:0;z-index:2;background:linear-gradient(110deg,transparent 20%,rgba(255,255,255,.65) 48%,rgba(255,255,255,.1) 55%,transparent 75%);animation:sshine 2.6s cubic-bezier(.4,0,.6,1) infinite;pointer-events:none;border-radius:2px}
+@keyframes sshine{0%{transform:translateX(-160%)}100%{transform:translateX(260%)}}
+.sp{background:linear-gradient(135deg,#1976D2 0%,#0D47A1 50%,#1565C0 100%);border-radius:1px;position:relative;overflow:hidden;background-image:linear-gradient(rgba(144,202,249,.38) 1px,transparent 1px),linear-gradient(90deg,rgba(144,202,249,.38) 1px,transparent 1px);background-size:7px 4.5px;box-shadow:inset 0 0 0 .5px rgba(100,181,246,.6),inset 0 1px 2px rgba(255,255,255,.12)}
+.sp::before{content:'';position:absolute;top:0;left:0;right:50%;bottom:50%;background:rgba(255,255,255,.1);border-radius:1px 0 0 0}
 
 /* ── EMAIL LIST ── */
 .email-card{background:var(--bg);border:.5px solid var(--border);border-radius:var(--rl);padding:13px 14px;display:flex;align-items:center;gap:12px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
@@ -361,7 +364,7 @@ textarea.fi{min-height:80px;resize:vertical}
   <div class="mhdr">
     <img class="mhdr-logo" src="https://nolasolarenergy.com/wp-content/uploads/2022/06/logotest.png" onerror="this.style.display='none';document.getElementById('mfb').style.display='block'" alt="Nola Solar"/>
     <div id="mfb" class="mhdr-fb" style="display:none">Nola <span>Solar</span></div>
-    <div class="solar-anim"><div class="solar-grid"><div class="sp"></div><div class="sp"></div><div class="sp"></div><div class="sp"></div><div class="sp"></div><div class="sp"></div></div></div>
+    <div class="solar-anim"><div class="solar-mount"><div class="solar-frame"><div class="solar-grid"><div class="sp"></div><div class="sp"></div><div class="sp"></div><div class="sp"></div><div class="sp"></div><div class="sp"></div><div class="sp"></div><div class="sp"></div><div class="sp"></div><div class="sp"></div><div class="sp"></div><div class="sp"></div></div></div></div></div>
     <div class="mhdr-r">
       <div class="ldot" id="ldot" style="display:none"></div>
       <button class="ibtn" onclick="doRefresh()">↻</button>
@@ -392,7 +395,7 @@ textarea.fi{min-height:80px;resize:vertical}
 <div class="view" id="view-invlist">
   <div class="mhdr">
     <img class="mhdr-logo" src="https://nolasolarenergy.com/wp-content/uploads/2022/06/logotest.png" onerror="this.style.display='none'" alt="Nola Solar"/>
-    <div class="solar-anim"><div class="solar-grid"><div class="sp"></div><div class="sp"></div><div class="sp"></div><div class="sp"></div><div class="sp"></div><div class="sp"></div></div></div>
+    <div class="solar-anim"><div class="solar-mount"><div class="solar-frame"><div class="solar-grid"><div class="sp"></div><div class="sp"></div><div class="sp"></div><div class="sp"></div><div class="sp"></div><div class="sp"></div><div class="sp"></div><div class="sp"></div><div class="sp"></div><div class="sp"></div><div class="sp"></div><div class="sp"></div></div></div></div></div>
     <div class="mhdr-r">
       <button class="ibtn add" onclick="showInvForm(null)">+</button>
     </div>
@@ -411,7 +414,7 @@ textarea.fi{min-height:80px;resize:vertical}
 <div class="view" id="view-schedule">
   <div class="mhdr">
     <img class="mhdr-logo" src="https://nolasolarenergy.com/wp-content/uploads/2022/06/logotest.png" onerror="this.style.display='none'" alt="Nola Solar"/>
-    <div class="solar-anim"><div class="solar-grid"><div class="sp"></div><div class="sp"></div><div class="sp"></div><div class="sp"></div><div class="sp"></div><div class="sp"></div></div></div>
+    <div class="solar-anim"><div class="solar-mount"><div class="solar-frame"><div class="solar-grid"><div class="sp"></div><div class="sp"></div><div class="sp"></div><div class="sp"></div><div class="sp"></div><div class="sp"></div><div class="sp"></div><div class="sp"></div><div class="sp"></div><div class="sp"></div><div class="sp"></div><div class="sp"></div></div></div></div></div>
     <div class="mhdr-r">
       <button class="ibtn add" onclick="showSchedForm(null)">+</button>
     </div>
@@ -487,7 +490,7 @@ textarea.fi{min-height:80px;resize:vertical}
 <div class="view" id="view-notes">
   <div class="mhdr">
     <img class="mhdr-logo" src="https://nolasolarenergy.com/wp-content/uploads/2022/06/logotest.png" onerror="this.style.display='none'" alt="Nola Solar"/>
-    <div class="solar-anim"><div class="solar-grid"><div class="sp"></div><div class="sp"></div><div class="sp"></div><div class="sp"></div><div class="sp"></div><div class="sp"></div></div></div>
+    <div class="solar-anim"><div class="solar-mount"><div class="solar-frame"><div class="solar-grid"><div class="sp"></div><div class="sp"></div><div class="sp"></div><div class="sp"></div><div class="sp"></div><div class="sp"></div><div class="sp"></div><div class="sp"></div><div class="sp"></div><div class="sp"></div><div class="sp"></div><div class="sp"></div></div></div></div></div>
     <div class="mhdr-r">
       <button class="ibtn add" onclick="showNoteForm(null)">+</button>
     </div>
@@ -687,10 +690,9 @@ textarea.fi{min-height:80px;resize:vertical}
         </div>
         <div class="fg">
           <label>Status</label>
-          <select class="fi" id="inv-receipt-status">
-            <option value="paid">Paid</option>
-            <option value="unpaid">Unpaid</option>
-          </select>
+          <div style="height:44px;display:flex;align-items:center;padding:0 14px;border:.5px solid var(--border2);border-radius:var(--r);background:var(--bg)">
+            <span class="inv-status paid" style="margin-top:0">Paid</span>
+          </div>
         </div>
       </div>
     </div>
@@ -723,7 +725,7 @@ const STATUSES=['new','pending','inprocess','completed'];
 const STATUS_LABEL={new:'New',pending:'Pending',inprocess:'In Process',completed:'Completed'};
 const STATUS_ICON={new:'✦',pending:'⏳',inprocess:'⚡',completed:'✔'};
 const INV_KIND_LABEL={invoice:'Invoice',receipt:'Receipt'};
-const INV_STATUS_LABEL={draft:'Draft',sent:'Sent',approved:'Approved',paid:'Paid',rejected:'Rejected',unpaid:'Unpaid'};
+const INV_STATUS_LABEL={draft:'Draft',sent:'Sent',approved:'Approved',paid:'Paid',rejected:'Rejected'};
 const HARDCODED_CFG={apiKey:'AIzaSyBdOfax4NY7PhyyFhpy7ItivkUID0ksMyo',databaseURL:'https://nolacrm-85b09-default-rtdb.firebaseio.com',projectId:'nolacrm-85b09',appId:'1:107492211574:web:7ed2a2dd40d8be4707d857',authDomain:'nolacrm-85b09.firebaseapp.com'};
 
 let db=null,contacts={},photos={},invoices={},selCat='all',selId=null,editId=null,fCat='residential';
@@ -810,14 +812,18 @@ function getInvoiceLabel(invOrKind){
   return INV_KIND_LABEL[kind]||'Document';
 }
 function getInvoiceStatusLabel(status){return INV_STATUS_LABEL[status]||'Draft';}
+function getEffectiveInvoiceStatus(inv){
+  return getInvoiceKind(inv)==='receipt'?'paid':(inv?.status||'draft');
+}
 function getInvoiceStatusOptions(kind){
   return kind==='receipt'
-    ? ['paid','unpaid']
+    ? ['paid']
     : ['draft','sent','approved','paid','rejected'];
 }
 function getInvoiceWatermark(inv){
-  if(inv?.status==='paid')return'PAID';
-  if(inv?.status==='approved')return'APPROVED';
+  const status=getEffectiveInvoiceStatus(inv);
+  if(status==='paid')return'PAID';
+  if(status==='approved')return'APPROVED';
   return'';
 }
 function updateInvPreviewTitle(inv){
@@ -1049,7 +1055,6 @@ function showInvForm(contactId){
   document.getElementById('inv-valid-until').value=getDateOffset(7);
   document.getElementById('inv-status').value='draft';
   document.getElementById('inv-payment-method').value='Check';
-  document.getElementById('inv-receipt-status').value='paid';
   document.getElementById('inv-payment-terms').value='50% deposit, balance due on completion';
   document.getElementById('inv-project').value='';
   document.getElementById('inv-scope').value='';
@@ -1317,7 +1322,7 @@ function saveInvoice(){
   const notes=invoiceMode?document.getElementById('inv-notes').value.trim():'';
   const paymentTerms=invoiceMode?document.getElementById('inv-payment-terms').value.trim():'';
   const payment=invoiceMode?'':document.getElementById('inv-payment-method').value;
-  const status=invoiceMode?document.getElementById('inv-status').value:document.getElementById('inv-receipt-status').value;
+  const status=invoiceMode?document.getElementById('inv-status').value:'paid';
   if(invoiceMode&&!projectName&&!scope){toast('Add a project title or scope of work');return;}
   const items=lineItems.filter(i=>i.desc||(parseFloat(i.price)||0)>0).map(i=>({
     desc:i.desc||'',
@@ -1383,11 +1388,11 @@ function renderInvList(){
   el.innerHTML=all.map(inv=>{
     const t=Number.isFinite(parseFloat(inv.total))?parseFloat(inv.total):((inv.lineItems||[]).reduce((s,i)=>s+(parseFloat(i.amount)||0),0)+(parseFloat(inv.taxAmt)||0));
     const kind=getInvoiceKind(inv);
+    const status=getEffectiveInvoiceStatus(inv);
     const meta=[formatInvDate(inv.date),kind==='receipt'?(inv.payment||''):inv.projectName].filter(Boolean).join(' • ');
     const scopeRaw=(inv.scope||'').replace(/\s+/g,' ').trim();
     const scopePreview=scopeRaw.length>82?scopeRaw.slice(0,79)+'...':scopeRaw;
     const fallbackMeta=kind==='receipt'?'Open to view payment details':'No project details added';
-    const status=inv.status||(kind==='receipt'?'paid':'draft');
     const statusOptions=getInvoiceStatusOptions(kind).map(option=>`<option value="${option}" ${status===option?'selected':''}>${getInvoiceStatusLabel(option)}</option>`).join('');
     return`<div class="inv-card" onclick="previewSavedInv('${inv.id}')">
       <div class="inv-card-l">
@@ -1397,9 +1402,11 @@ function renderInvList(){
       </div>
       <div class="inv-card-r">
         <div class="invamt">$${t.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}</div>
-        <select class="inv-status-edit ${status}" onclick="event.stopPropagation()" onchange="event.stopPropagation();updateInvoiceStatus('${inv.id}',this.value)">
-          ${statusOptions}
-        </select>
+        ${kind==='receipt'
+          ? `<div class="inv-status paid" style="margin-top:0">Paid</div>`
+          : `<select class="inv-status-edit ${status}" onclick="event.stopPropagation()" onchange="event.stopPropagation();updateInvoiceStatus('${inv.id}',this.value)">
+              ${statusOptions}
+            </select>`}
       </div>
     </div>`;
   }).join('');
