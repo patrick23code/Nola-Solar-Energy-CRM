@@ -22,6 +22,7 @@
   --com-bg:#E3F2FD;--com-txt:#1565C0;
   --red-bg:#FFEBEE;--red-txt:#C62828;
   --new-bg:#E3F2FD;--new-txt:#1565C0;--new-brd:#90CAF9;
+  --followup-bg:#E0F2FE;--followup-txt:#0369A1;--followup-brd:#7DD3FC;
   --pending-bg:#F3E5F5;--pending-txt:#7B1FA2;--pending-brd:#CE93D8;
   --inprog-bg:#FFF3E0;--inprog-txt:#E65100;--inprog-brd:#FFCC80;
   --done-bg:#E8F5E9;--done-txt:#2E7D32;--done-brd:#A5D6A7;
@@ -34,6 +35,7 @@
   --res-bg:#2d1500;--res-txt:#ffb74d;--com-bg:#0a1929;--com-txt:#64b5f6;
   --red-bg:#2d0a0a;--red-txt:#ef9a9a;
   --new-bg:#0a1929;--new-txt:#64b5f6;--new-brd:#1e4d8c;
+  --followup-bg:#082f49;--followup-txt:#7dd3fc;--followup-brd:#0369a1;
   --pending-bg:#1a0a2e;--pending-txt:#ce93d8;--pending-brd:#7b1fa2;
   --inprog-bg:#2d1500;--inprog-txt:#ffb74d;--inprog-brd:#e65100;
   --done-bg:#0a1f0a;--done-txt:#81c784;--done-brd:#2e7d32;
@@ -46,7 +48,8 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFo
 
 /* MAIN HDR */
 .mhdr{background:var(--orange);padding:14px 16px 12px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;border-bottom:none;box-shadow:0 2px 8px rgba(245,166,35,.3)}
-.mhdr-logo{height:30px;object-fit:contain}
+.mhdr-logo{height:30px;object-fit:contain;animation:logo-spin 12s linear infinite}
+@keyframes logo-spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 .mhdr-fb{color:var(--text);font-size:15px;font-weight:800;display:none}.mhdr-fb span{color:var(--orange)}
 .mhdr-r{display:flex;gap:8px;align-items:center}
 .ldot{width:7px;height:7px;border-radius:50%;background:#22c55e;animation:pulse 2s infinite}
@@ -81,7 +84,7 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFo
 .fpill.on{background:var(--orange);color:#fff;border-color:var(--orange)}
 
 /* STATS */
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:4px 16px 12px;flex-shrink:0}
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;padding:4px 16px 12px;flex-shrink:0}
 .stat{background:var(--bg);border-radius:var(--r);padding:10px 4px;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,.07);border:1px solid var(--border)}
 .stat .sn{font-size:17px;font-weight:800;color:var(--orange)}
 .stat .sl{font-size:9px;color:var(--text2);margin-top:2px;line-height:1.3;font-weight:500}
@@ -105,6 +108,7 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFo
 .badge.commercial{background:var(--com-bg);color:var(--com-txt)}
 .sbadge{font-size:10px;padding:3px 9px;border-radius:99px;font-weight:700}
 .sbadge.new{background:var(--new-bg);color:var(--new-txt)}
+.sbadge.followup{background:var(--followup-bg);color:var(--followup-txt)}
 .sbadge.pending{background:var(--pending-bg);color:var(--pending-txt)}
 .sbadge.inprocess{background:var(--inprog-bg);color:var(--inprog-txt)}
 .sbadge.completed{background:var(--done-bg);color:var(--done-txt)}
@@ -130,10 +134,11 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFo
 .ival{font-size:14px;color:var(--text);flex:1;word-break:break-word}
 .ival a{color:var(--orange);text-decoration:none}
 .dmeta{font-size:11px;color:var(--text3);text-align:center;margin-top:8px}
-.status-stepper{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:14px}
+.status-stepper{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:14px}
 .sstep{padding:9px 4px;border-radius:var(--r);border:1.5px solid var(--border);background:var(--bg);cursor:pointer;text-align:center;font-size:10px;font-weight:700;color:var(--text2);line-height:1.4;user-select:none}
 .sstep .ssicon{font-size:18px;display:block;margin-bottom:3px}
 .sstep.active.new{border-color:var(--new-brd);background:var(--new-bg);color:var(--new-txt)}
+.sstep.active.followup{border-color:var(--followup-brd);background:var(--followup-bg);color:var(--followup-txt)}
 .sstep.active.pending{border-color:var(--pending-brd);background:var(--pending-bg);color:var(--pending-txt)}
 .sstep.active.inprocess{border-color:var(--inprog-brd);background:var(--inprog-bg);color:var(--inprog-txt)}
 .sstep.active.completed{border-color:var(--done-brd);background:var(--done-bg);color:var(--done-txt)}
@@ -333,13 +338,6 @@ textarea.fi{min-height:80px;resize:vertical}
   #print-frame{display:block!important}
 }
 
-/* ── SOLAR ANIMATION ── */
-.solar-anim{flex:1;display:flex;justify-content:center;align-items:center}
-.solar-svg .sun-g{animation:sun-rot 14s linear infinite;transform-origin:45px 8px}
-.solar-svg .pcells{animation:panel-breathe 3s ease-in-out infinite}
-@keyframes sun-rot{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
-@keyframes panel-breathe{0%,100%{opacity:.6}50%{opacity:1}}
-
 /* ── EMAIL LIST ── */
 .email-card{background:var(--bg);border:.5px solid var(--border);border-radius:var(--rl);padding:13px 14px;display:flex;align-items:center;gap:12px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
 .email-av{width:40px;height:40px;border-radius:50%;background:var(--orange-light);color:var(--orange-d);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;flex-shrink:0;border:2px solid var(--orange)}
@@ -360,8 +358,7 @@ textarea.fi{min-height:80px;resize:vertical}
   <div class="mhdr">
     <img class="mhdr-logo" src="https://nolasolarenergy.com/wp-content/uploads/2022/06/logotest.png" onerror="this.style.display='none';document.getElementById('mfb').style.display='block'" alt="Nola Solar"/>
     <div id="mfb" class="mhdr-fb" style="display:none">Nola <span>Solar</span></div>
-    <div class="solar-anim"><svg class="solar-svg" width="90" height="36" viewBox="0 0 90 36" fill="none" xmlns="http://www.w3.org/2000/svg"><g class="sun-g"><circle cx="45" cy="8" r="3.5" fill="rgba(255,255,255,0.92)"/><line x1="45" y1="1" x2="45" y2="2.8" stroke="rgba(255,255,255,0.75)" stroke-width="1.4" stroke-linecap="round"/><line x1="45" y1="13.2" x2="45" y2="15" stroke="rgba(255,255,255,0.75)" stroke-width="1.4" stroke-linecap="round"/><line x1="37.5" y1="8" x2="39.3" y2="8" stroke="rgba(255,255,255,0.75)" stroke-width="1.4" stroke-linecap="round"/><line x1="50.7" y1="8" x2="52.5" y2="8" stroke="rgba(255,255,255,0.75)" stroke-width="1.4" stroke-linecap="round"/><line x1="39.8" y1="3.3" x2="41.1" y2="4.6" stroke="rgba(255,255,255,0.75)" stroke-width="1.4" stroke-linecap="round"/><line x1="48.9" y1="11.4" x2="50.2" y2="12.7" stroke="rgba(255,255,255,0.75)" stroke-width="1.4" stroke-linecap="round"/><line x1="50.2" y1="3.3" x2="48.9" y2="4.6" stroke="rgba(255,255,255,0.75)" stroke-width="1.4" stroke-linecap="round"/><line x1="41.1" y1="11.4" x2="39.8" y2="12.7" stroke="rgba(255,255,255,0.75)" stroke-width="1.4" stroke-linecap="round"/></g><rect x="3" y="17" width="84" height="17" rx="2" fill="rgba(0,0,0,0.15)" stroke="rgba(255,255,255,0.35)" stroke-width="0.7"/><g class="pcells"><rect x="6" y="19.5" width="18" height="6" rx="1" fill="rgba(255,255,255,0.28)" stroke="rgba(255,255,255,0.4)" stroke-width="0.5"/><rect x="26" y="19.5" width="18" height="6" rx="1" fill="rgba(255,255,255,0.28)" stroke="rgba(255,255,255,0.4)" stroke-width="0.5"/><rect x="46" y="19.5" width="18" height="6" rx="1" fill="rgba(255,255,255,0.28)" stroke="rgba(255,255,255,0.4)" stroke-width="0.5"/><rect x="66" y="19.5" width="18" height="6" rx="1" fill="rgba(255,255,255,0.28)" stroke="rgba(255,255,255,0.4)" stroke-width="0.5"/><rect x="6" y="27.5" width="18" height="5" rx="1" fill="rgba(255,255,255,0.28)" stroke="rgba(255,255,255,0.4)" stroke-width="0.5"/><rect x="26" y="27.5" width="18" height="5" rx="1" fill="rgba(255,255,255,0.28)" stroke="rgba(255,255,255,0.4)" stroke-width="0.5"/><rect x="46" y="27.5" width="18" height="5" rx="1" fill="rgba(255,255,255,0.28)" stroke="rgba(255,255,255,0.4)" stroke-width="0.5"/><rect x="66" y="27.5" width="18" height="5" rx="1" fill="rgba(255,255,255,0.28)" stroke="rgba(255,255,255,0.4)" stroke-width="0.5"/></g></svg></div>
-    <div class="mhdr-r">
+        <div class="mhdr-r">
       <div class="ldot" id="ldot" style="display:none"></div>
       <button class="ibtn" onclick="doRefresh()">↻</button>
       <button class="ibtn" onclick="showEmailList()" title="Email List">✉️</button>
@@ -373,6 +370,7 @@ textarea.fi{min-height:80px;resize:vertical}
   <div class="fbar">
     <button class="fpill on" onclick="setCat('all',this)">All</button>
     <button class="fpill" onclick="setCat('status:new',this)">New</button>
+    <button class="fpill" onclick="setCat('status:followup',this)">Follow Up</button>
     <button class="fpill" onclick="setCat('status:pending',this)">Pending</button>
     <button class="fpill" onclick="setCat('status:inprocess',this)">In Process</button>
     <button class="fpill" onclick="setCat('status:completed',this)">Completed</button>
@@ -391,8 +389,7 @@ textarea.fi{min-height:80px;resize:vertical}
 <div class="view" id="view-invlist">
   <div class="mhdr">
     <img class="mhdr-logo" src="https://nolasolarenergy.com/wp-content/uploads/2022/06/logotest.png" onerror="this.style.display='none'" alt="Nola Solar"/>
-    <div class="solar-anim"><svg class="solar-svg" width="90" height="36" viewBox="0 0 90 36" fill="none" xmlns="http://www.w3.org/2000/svg"><g class="sun-g"><circle cx="45" cy="8" r="3.5" fill="rgba(255,255,255,0.92)"/><line x1="45" y1="1" x2="45" y2="2.8" stroke="rgba(255,255,255,0.75)" stroke-width="1.4" stroke-linecap="round"/><line x1="45" y1="13.2" x2="45" y2="15" stroke="rgba(255,255,255,0.75)" stroke-width="1.4" stroke-linecap="round"/><line x1="37.5" y1="8" x2="39.3" y2="8" stroke="rgba(255,255,255,0.75)" stroke-width="1.4" stroke-linecap="round"/><line x1="50.7" y1="8" x2="52.5" y2="8" stroke="rgba(255,255,255,0.75)" stroke-width="1.4" stroke-linecap="round"/><line x1="39.8" y1="3.3" x2="41.1" y2="4.6" stroke="rgba(255,255,255,0.75)" stroke-width="1.4" stroke-linecap="round"/><line x1="48.9" y1="11.4" x2="50.2" y2="12.7" stroke="rgba(255,255,255,0.75)" stroke-width="1.4" stroke-linecap="round"/><line x1="50.2" y1="3.3" x2="48.9" y2="4.6" stroke="rgba(255,255,255,0.75)" stroke-width="1.4" stroke-linecap="round"/><line x1="41.1" y1="11.4" x2="39.8" y2="12.7" stroke="rgba(255,255,255,0.75)" stroke-width="1.4" stroke-linecap="round"/></g><rect x="3" y="17" width="84" height="17" rx="2" fill="rgba(0,0,0,0.15)" stroke="rgba(255,255,255,0.35)" stroke-width="0.7"/><g class="pcells"><rect x="6" y="19.5" width="18" height="6" rx="1" fill="rgba(255,255,255,0.28)" stroke="rgba(255,255,255,0.4)" stroke-width="0.5"/><rect x="26" y="19.5" width="18" height="6" rx="1" fill="rgba(255,255,255,0.28)" stroke="rgba(255,255,255,0.4)" stroke-width="0.5"/><rect x="46" y="19.5" width="18" height="6" rx="1" fill="rgba(255,255,255,0.28)" stroke="rgba(255,255,255,0.4)" stroke-width="0.5"/><rect x="66" y="19.5" width="18" height="6" rx="1" fill="rgba(255,255,255,0.28)" stroke="rgba(255,255,255,0.4)" stroke-width="0.5"/><rect x="6" y="27.5" width="18" height="5" rx="1" fill="rgba(255,255,255,0.28)" stroke="rgba(255,255,255,0.4)" stroke-width="0.5"/><rect x="26" y="27.5" width="18" height="5" rx="1" fill="rgba(255,255,255,0.28)" stroke="rgba(255,255,255,0.4)" stroke-width="0.5"/><rect x="46" y="27.5" width="18" height="5" rx="1" fill="rgba(255,255,255,0.28)" stroke="rgba(255,255,255,0.4)" stroke-width="0.5"/><rect x="66" y="27.5" width="18" height="5" rx="1" fill="rgba(255,255,255,0.28)" stroke="rgba(255,255,255,0.4)" stroke-width="0.5"/></g></svg></div>
-    <div class="mhdr-r">
+        <div class="mhdr-r">
       <button class="ibtn add" onclick="showInvForm(null)">+</button>
     </div>
   </div>
@@ -410,8 +407,7 @@ textarea.fi{min-height:80px;resize:vertical}
 <div class="view" id="view-schedule">
   <div class="mhdr">
     <img class="mhdr-logo" src="https://nolasolarenergy.com/wp-content/uploads/2022/06/logotest.png" onerror="this.style.display='none'" alt="Nola Solar"/>
-    <div class="solar-anim"><svg class="solar-svg" width="90" height="36" viewBox="0 0 90 36" fill="none" xmlns="http://www.w3.org/2000/svg"><g class="sun-g"><circle cx="45" cy="8" r="3.5" fill="rgba(255,255,255,0.92)"/><line x1="45" y1="1" x2="45" y2="2.8" stroke="rgba(255,255,255,0.75)" stroke-width="1.4" stroke-linecap="round"/><line x1="45" y1="13.2" x2="45" y2="15" stroke="rgba(255,255,255,0.75)" stroke-width="1.4" stroke-linecap="round"/><line x1="37.5" y1="8" x2="39.3" y2="8" stroke="rgba(255,255,255,0.75)" stroke-width="1.4" stroke-linecap="round"/><line x1="50.7" y1="8" x2="52.5" y2="8" stroke="rgba(255,255,255,0.75)" stroke-width="1.4" stroke-linecap="round"/><line x1="39.8" y1="3.3" x2="41.1" y2="4.6" stroke="rgba(255,255,255,0.75)" stroke-width="1.4" stroke-linecap="round"/><line x1="48.9" y1="11.4" x2="50.2" y2="12.7" stroke="rgba(255,255,255,0.75)" stroke-width="1.4" stroke-linecap="round"/><line x1="50.2" y1="3.3" x2="48.9" y2="4.6" stroke="rgba(255,255,255,0.75)" stroke-width="1.4" stroke-linecap="round"/><line x1="41.1" y1="11.4" x2="39.8" y2="12.7" stroke="rgba(255,255,255,0.75)" stroke-width="1.4" stroke-linecap="round"/></g><rect x="3" y="17" width="84" height="17" rx="2" fill="rgba(0,0,0,0.15)" stroke="rgba(255,255,255,0.35)" stroke-width="0.7"/><g class="pcells"><rect x="6" y="19.5" width="18" height="6" rx="1" fill="rgba(255,255,255,0.28)" stroke="rgba(255,255,255,0.4)" stroke-width="0.5"/><rect x="26" y="19.5" width="18" height="6" rx="1" fill="rgba(255,255,255,0.28)" stroke="rgba(255,255,255,0.4)" stroke-width="0.5"/><rect x="46" y="19.5" width="18" height="6" rx="1" fill="rgba(255,255,255,0.28)" stroke="rgba(255,255,255,0.4)" stroke-width="0.5"/><rect x="66" y="19.5" width="18" height="6" rx="1" fill="rgba(255,255,255,0.28)" stroke="rgba(255,255,255,0.4)" stroke-width="0.5"/><rect x="6" y="27.5" width="18" height="5" rx="1" fill="rgba(255,255,255,0.28)" stroke="rgba(255,255,255,0.4)" stroke-width="0.5"/><rect x="26" y="27.5" width="18" height="5" rx="1" fill="rgba(255,255,255,0.28)" stroke="rgba(255,255,255,0.4)" stroke-width="0.5"/><rect x="46" y="27.5" width="18" height="5" rx="1" fill="rgba(255,255,255,0.28)" stroke="rgba(255,255,255,0.4)" stroke-width="0.5"/><rect x="66" y="27.5" width="18" height="5" rx="1" fill="rgba(255,255,255,0.28)" stroke="rgba(255,255,255,0.4)" stroke-width="0.5"/></g></svg></div>
-    <div class="mhdr-r">
+        <div class="mhdr-r">
       <button class="ibtn add" onclick="showSchedForm(null)">+</button>
     </div>
   </div>
@@ -486,8 +482,7 @@ textarea.fi{min-height:80px;resize:vertical}
 <div class="view" id="view-notes">
   <div class="mhdr">
     <img class="mhdr-logo" src="https://nolasolarenergy.com/wp-content/uploads/2022/06/logotest.png" onerror="this.style.display='none'" alt="Nola Solar"/>
-    <div class="solar-anim"><svg class="solar-svg" width="90" height="36" viewBox="0 0 90 36" fill="none" xmlns="http://www.w3.org/2000/svg"><g class="sun-g"><circle cx="45" cy="8" r="3.5" fill="rgba(255,255,255,0.92)"/><line x1="45" y1="1" x2="45" y2="2.8" stroke="rgba(255,255,255,0.75)" stroke-width="1.4" stroke-linecap="round"/><line x1="45" y1="13.2" x2="45" y2="15" stroke="rgba(255,255,255,0.75)" stroke-width="1.4" stroke-linecap="round"/><line x1="37.5" y1="8" x2="39.3" y2="8" stroke="rgba(255,255,255,0.75)" stroke-width="1.4" stroke-linecap="round"/><line x1="50.7" y1="8" x2="52.5" y2="8" stroke="rgba(255,255,255,0.75)" stroke-width="1.4" stroke-linecap="round"/><line x1="39.8" y1="3.3" x2="41.1" y2="4.6" stroke="rgba(255,255,255,0.75)" stroke-width="1.4" stroke-linecap="round"/><line x1="48.9" y1="11.4" x2="50.2" y2="12.7" stroke="rgba(255,255,255,0.75)" stroke-width="1.4" stroke-linecap="round"/><line x1="50.2" y1="3.3" x2="48.9" y2="4.6" stroke="rgba(255,255,255,0.75)" stroke-width="1.4" stroke-linecap="round"/><line x1="41.1" y1="11.4" x2="39.8" y2="12.7" stroke="rgba(255,255,255,0.75)" stroke-width="1.4" stroke-linecap="round"/></g><rect x="3" y="17" width="84" height="17" rx="2" fill="rgba(0,0,0,0.15)" stroke="rgba(255,255,255,0.35)" stroke-width="0.7"/><g class="pcells"><rect x="6" y="19.5" width="18" height="6" rx="1" fill="rgba(255,255,255,0.28)" stroke="rgba(255,255,255,0.4)" stroke-width="0.5"/><rect x="26" y="19.5" width="18" height="6" rx="1" fill="rgba(255,255,255,0.28)" stroke="rgba(255,255,255,0.4)" stroke-width="0.5"/><rect x="46" y="19.5" width="18" height="6" rx="1" fill="rgba(255,255,255,0.28)" stroke="rgba(255,255,255,0.4)" stroke-width="0.5"/><rect x="66" y="19.5" width="18" height="6" rx="1" fill="rgba(255,255,255,0.28)" stroke="rgba(255,255,255,0.4)" stroke-width="0.5"/><rect x="6" y="27.5" width="18" height="5" rx="1" fill="rgba(255,255,255,0.28)" stroke="rgba(255,255,255,0.4)" stroke-width="0.5"/><rect x="26" y="27.5" width="18" height="5" rx="1" fill="rgba(255,255,255,0.28)" stroke="rgba(255,255,255,0.4)" stroke-width="0.5"/><rect x="46" y="27.5" width="18" height="5" rx="1" fill="rgba(255,255,255,0.28)" stroke="rgba(255,255,255,0.4)" stroke-width="0.5"/><rect x="66" y="27.5" width="18" height="5" rx="1" fill="rgba(255,255,255,0.28)" stroke="rgba(255,255,255,0.4)" stroke-width="0.5"/></g></svg></div>
-    <div class="mhdr-r">
+        <div class="mhdr-r">
       <button class="ibtn add" onclick="showNoteForm(null)">+</button>
     </div>
   </div>
@@ -568,13 +563,23 @@ textarea.fi{min-height:80px;resize:vertical}
   <div class="fbody">
     <div class="fg"><label>Project Name</label><input class="fi" id="f-project" type="text" placeholder="Roof Upgrade - Smith Home"/></div>
     <div class="r2">
-      <div class="fg"><label>First Name *</label><input class="fi" id="f-fn" type="text" placeholder="John"/></div>
+      <div class="fg"><label>First Name</label><input class="fi" id="f-fn" type="text" placeholder="John"/></div>
       <div class="fg"><label>Last Name</label><input class="fi" id="f-ln" type="text" placeholder="Smith"/></div>
     </div>
     <div class="fg"><label>Phone</label><input class="fi" id="f-phone" type="tel" placeholder="+1 (504) 000-0000"/></div>
     <div class="fg"><label>Email</label><input class="fi" id="f-email" type="email" placeholder="example@email.com"/></div>
     <div class="fg"><label>Address / Project Location</label><input class="fi" id="f-addr" type="text" placeholder="Street, city, state"/></div>
     <div class="fg"><label>Job Type</label><div class="jgrid" id="jgrid"></div></div>
+    <div class="fg">
+      <label>Status</label>
+      <select class="fi" id="f-status">
+        <option value="new">New</option>
+        <option value="followup">Follow Up</option>
+        <option value="pending">Pending</option>
+        <option value="inprocess">In Process</option>
+        <option value="completed">Completed</option>
+      </select>
+    </div>
     <div class="fg"><label>Status / Notes</label><textarea class="fi" id="f-notes" placeholder="Quote given, follow-up needed, special notes..."></textarea></div>
     <div class="fg">
       <label>Photos</label>
@@ -717,9 +722,9 @@ textarea.fi{min-height:80px;resize:vertical}
 <script>
 const JOBS=['Inspection','Removal/Reinstall','Microinverter Replacement','Panel Cleaning','System Upgrade','Inverter Repair','New Sale','Follow Up'];
 const CATM={residential:'Residential',commercial:'Commercial'};
-const STATUSES=['new','pending','inprocess','completed'];
-const STATUS_LABEL={new:'New',pending:'Pending',inprocess:'In Process',completed:'Completed'};
-const STATUS_ICON={new:'✦',pending:'⏳',inprocess:'⚡',completed:'✔'};
+const STATUSES=['new','followup','pending','inprocess','completed'];
+const STATUS_LABEL={new:'New',followup:'Follow Up',pending:'Pending',inprocess:'In Process',completed:'Completed'};
+const STATUS_ICON={new:'✦',followup:'↺',pending:'⏳',inprocess:'⚡',completed:'✔'};
 const INV_KIND_LABEL={invoice:'Invoice',receipt:'Receipt'};
 const INV_STATUS_LABEL={draft:'Draft',sent:'Sent',approved:'Approved',paid:'Paid',rejected:'Rejected'};
 const HARDCODED_CFG={apiKey:'AIzaSyBdOfax4NY7PhyyFhpy7ItivkUID0ksMyo',databaseURL:'https://nolacrm-85b09-default-rtdb.firebaseio.com',projectId:'nolacrm-85b09',appId:'1:107492211574:web:7ed2a2dd40d8be4707d857',authDomain:'nolacrm-85b09.firebaseapp.com'};
@@ -790,7 +795,7 @@ function setCat(cat,btn){selCat=cat;document.querySelectorAll('.fbar .fpill').fo
 function selCatForm(cat){fCat=cat;document.querySelectorAll('.copt').forEach(e=>e.classList.remove('on'));document.getElementById('copt-'+cat).classList.add('on');}
 
 /* ── Helpers ── */
-function fullName(c){return[c.firstName,c.lastName].filter(Boolean).join(' ')||c.name||'';}
+function fullName(c){return[c.firstName,c.lastName].filter(Boolean).join(' ')||c.projectName||c.name||'';}
 function initials(c){const n=fullName(c);return n.split(' ').map(x=>x[0]||'').slice(0,2).join('').toUpperCase();}
 function getDateOffset(days){
   const d=new Date();
@@ -851,13 +856,12 @@ async function updateInvoiceStatus(id,status){
 
 /* ── Stats ── */
 function renderStats(){
-  const ct={new:0,pending:0,inprocess:0,completed:0};
+  const colorMap={new:'var(--new-txt)',followup:'var(--followup-txt)',pending:'var(--pending-txt)',inprocess:'var(--inprog-txt)',completed:'var(--done-txt)'};
+  const ct=Object.fromEntries(STATUSES.map(s=>[s,0]));
   Object.values(contacts).forEach(c=>{const s=c.status||'new';if(ct[s]!==undefined)ct[s]++;});
-  document.getElementById('stats').innerHTML=`
-    <div class="stat"><div class="sn" style="color:var(--new-txt)">${ct.new}</div><div class="sl">New</div></div>
-    <div class="stat"><div class="sn" style="color:var(--pending-txt)">${ct.pending}</div><div class="sl">Pending</div></div>
-    <div class="stat"><div class="sn" style="color:var(--inprog-txt)">${ct.inprocess}</div><div class="sl">In Process</div></div>
-    <div class="stat"><div class="sn" style="color:var(--done-txt)">${ct.completed}</div><div class="sl">Completed</div></div>`;
+  document.getElementById('stats').innerHTML=STATUSES.map(s=>`
+    <div class="stat"><div class="sn" style="color:${colorMap[s]}">${ct[s]}</div><div class="sl">${STATUS_LABEL[s]}</div></div>
+  `).join('');
 }
 
 /* ── Contact list ── */
@@ -931,6 +935,7 @@ function initJobs(){
 }
 function clearForm(){
   ['f-project','f-fn','f-ln','f-phone','f-email','f-addr','f-notes'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
+  document.getElementById('f-status').value='new';
   JOBS.forEach(j=>{const k='j_'+j.replace(/[\s\/]/g,'_');document.getElementById(k)?.classList.remove('on');document.getElementById('d_'+k)?.classList.remove('on');});
   document.getElementById('j-other-chk')?.classList.remove('on');document.getElementById('d_j-other-chk')?.classList.remove('on');
   document.getElementById('j-other-wrap').style.display='none';document.getElementById('j-other-input').value='';
@@ -938,11 +943,12 @@ function clearForm(){
 }
 function fillForm(c){
   document.getElementById('f-project').value=c.projectName||'';
-  document.getElementById('f-fn').value=c.firstName||c.name||'';
+  document.getElementById('f-fn').value=c.firstName||((!c.lastName&&c.name&&c.name!==c.projectName)?c.name:'');
   document.getElementById('f-ln').value=c.lastName||'';
   document.getElementById('f-phone').value=c.phone||'';
   document.getElementById('f-email').value=c.email||'';
   document.getElementById('f-addr').value=c.address||'';
+  document.getElementById('f-status').value=c.status||'new';
   document.getElementById('f-notes').value=c.notes||'';
   JOBS.forEach(j=>{const k='j_'+j.replace(/[\s\/]/g,'_');const on=(c.jobTypes||[]).includes(j);document.getElementById(k)?.classList.toggle('on',on);document.getElementById('d_'+k)?.classList.toggle('on',on);});
   const otherJob=(c.jobTypes||[]).find(j=>!JOBS.includes(j));
@@ -955,7 +961,7 @@ function togOther(){const on=document.getElementById('j-other-chk')?.classList.t
 async function saveContact(){
   const projectName=document.getElementById('f-project').value.trim();
   const fn=document.getElementById('f-fn').value.trim();
-  if(!fn){toast('First name is required!');return;}
+  if(!fn&&!projectName){toast('Project name or first name is required!');return;}
   const btn=document.getElementById('savebtn');btn.disabled=true;btn.textContent='Saving...';
   const ln=document.getElementById('f-ln').value.trim();
   const jobTypes=JOBS.filter(j=>document.getElementById('j_'+j.replace(/[\s\/]/g,'_'))?.classList.contains('on'));
@@ -963,7 +969,8 @@ async function saveContact(){
   if(otherVal)jobTypes.push(otherVal);
   const now=new Date().toISOString();const id=editId||('c_'+Date.now());
   const ex=editId?contacts[editId]:null;
-  const c={id,projectName,firstName:fn,lastName:ln,name:fn+(ln?' '+ln:''),category:fCat,status:ex?.status||'new',
+  const displayName=[fn,ln].filter(Boolean).join(' ')||projectName;
+  const c={id,projectName,firstName:fn,lastName:ln,name:displayName,category:fCat,status:document.getElementById('f-status').value||ex?.status||'new',
     phone:document.getElementById('f-phone').value.trim(),email:document.getElementById('f-email').value.trim(),
     address:document.getElementById('f-addr').value.trim(),notes:document.getElementById('f-notes').value.trim(),
     jobTypes,updatedAt:now,createdAt:ex?.createdAt||now};
@@ -983,6 +990,7 @@ async function updateStatus(id,status){
     await db.ref('contacts/'+id+'/status').set(status);
     await db.ref('contacts/'+id+'/updatedAt').set(new Date().toISOString());
     if(contacts[id]){contacts[id].status=status;}
+    renderList();
     renderDet(contacts[id]);toast('Status → '+STATUS_LABEL[status]);
   }catch(e){toast('Error: '+e.message,4000);}
 }
