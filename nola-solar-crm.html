@@ -137,7 +137,7 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFo
 .ival a{color:var(--orange);text-decoration:none}
 .dmeta{font-size:11px;color:var(--text3);text-align:center;margin-top:8px}
 .status-stepper{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:14px}
-.sstep{padding:9px 4px;border-radius:var(--r);border:1.5px solid var(--border);background:var(--bg);cursor:pointer;text-align:center;font-size:10px;font-weight:700;color:var(--text2);line-height:1.4;user-select:none}
+.sstep{padding:9px 4px;border-radius:var(--r);border:1.5px solid var(--border);background:var(--bg);cursor:pointer;text-align:center;font-size:10px;font-weight:700;color:var(--text2);line-height:1.4;user-select:none;font-family:inherit;width:100%}
 .sstep .ssicon{font-size:18px;display:block;margin-bottom:3px}
 .sstep.active.new{border-color:var(--new-brd);background:var(--new-bg);color:var(--new-txt)}
 .sstep.active.followup{border-color:var(--followup-brd);background:var(--followup-bg);color:var(--followup-txt)}
@@ -883,7 +883,7 @@ function renderDet(c){
     c.createdAt&&{l:'Added',v:new Date(c.createdAt).toLocaleDateString('en-US')},
   ].filter(Boolean);
   const gal=pks.length?`<div class="pgal">${pks.map(k=>`<div class="pthw"><img class="pth" src="${pm[k]}"/><button class="pdel" onclick="delPhoto('${c.id}','${k}')">×</button></div>`).join('')}</div>`:'';
-  const stepper=STATUSES.map(s=>`<div class="sstep ${s} ${st===s?'active':''}" onclick="updateStatus('${c.id}','${s}')"><span class="ssicon">${STATUS_ICON[s]}</span>${STATUS_LABEL[s]}</div>`).join('');
+  const stepper=STATUSES.map(s=>`<button class="sstep ${s} ${st===s?'active':''}" onclick="updateStatus('${c.id}','${s}')"><span class="ssicon">${STATUS_ICON[s]}</span>${STATUS_LABEL[s]}</button>`).join('');
   document.getElementById('dbody').innerHTML=`
     <div class="dhero"><div class="dav ${c.category}">${av}</div><div><div class="dname">${fullName(c)}</div><div style="display:flex;gap:5px;margin-top:6px;flex-wrap:wrap"><span class="sbadge ${st}">${STATUS_LABEL[st]}</span></div></div></div>
     <div class="status-stepper">${stepper}</div>
