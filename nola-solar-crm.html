@@ -927,15 +927,14 @@ function renderDet(c){
   const ph=c.phone||'';const addr=c.address||'';
   const mapsUrl=addr?`https://maps.apple.com/?q=${encodeURIComponent(addr)}`:'';
   document.getElementById('dbody').innerHTML=`
-    <div class="dhero"><div class="dav ${c.category}">${av}</div><div><div class="dname">${fullName(c)}</div></div></div>
+    <div class="dhero"><div class="dav ${c.category}">${av}</div><div><div class="dname">${fullName(c)}</div><div style="display:flex;align-items:center;gap:8px;margin-top:6px"><span class="sbadge ${st}">${STATUS_LABEL[st]}</span><button class="status-chg-btn" onclick="toggleStatusPicker()">Change</button></div></div></div>
+    <div class="status-picker" id="status-picker" style="display:none;margin-bottom:14px">${pickerOpts}</div>
     <div class="dquick">
       <a class="dqbtn${ph?'':' off'}" href="tel:${ph}"><span class="dqi">📞</span><span class="dql">Call</span></a>
       <a class="dqbtn${ph?'':' off'}" href="sms:${ph}"><span class="dqi">💬</span><span class="dql">Text</span></a>
       <a class="dqbtn${addr?'':' off'}" href="${mapsUrl}" target="_blank"><span class="dqi">📍</span><span class="dql">Maps</span></a>
       <button class="dqbtn" onclick="quickNote('${c.id}','${fullName(c).replace(/'/g,"\\'")}')"><span class="dqi">📝</span><span class="dql">Note</span></button>
     </div>
-    <div class="status-row"><span class="status-row-lbl">Status</span><span class="sbadge ${st}">${STATUS_LABEL[st]}</span><button class="status-chg-btn" onclick="toggleStatusPicker()">Change</button></div>
-    <div class="status-picker" id="status-picker" style="display:none">${pickerOpts}</div>
     <button class="abtn inv" style="width:100%;margin-bottom:14px" onclick="showInvForm('${c.id}')">🧾 Create Invoice / Receipt</button>
     <div class="psec">${gal}<label class="padd" onclick="document.getElementById('photo-input').click()">+ Add Photo${pks.length?' ('+pks.length+' photos)':''}</label></div>
     <div class="icard">${rows.map(r=>`<div class="irow"><div class="ilbl">${r.l}</div><div class="ival">${r.v}</div></div>`).join('')}</div>
