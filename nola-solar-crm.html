@@ -1859,7 +1859,7 @@ async function shareInvoice(){
 let schedJobs={}, calYear=new Date().getFullYear(), calMonth=new Date().getMonth(), calSelDate=null, schedPickerTab='crm', schedSelContact=null, calView='monthly';
 
 function getTodayStr(){const t=new Date();return`${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`;}
-function getWeekStart(ds){const d=new Date(ds+'T00:00:00');d.setDate(d.getDate()-d.getDay());return d;}
+function getWeekStart(ds){const d=new Date(ds+'T00:00:00');d.setDate(d.getDate()-((d.getDay()+6)%7));return d;}
 function dsFromDate(d){return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
 
 function setCalView(v){
