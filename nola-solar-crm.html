@@ -100,18 +100,17 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFo
 /* LIST */
 .clist{flex:1;overflow-y:auto;padding:0 16px 16px;display:flex;flex-direction:column;gap:7px;-webkit-overflow-scrolling:touch}
 .empty{text-align:center;padding:60px 24px;color:var(--text2);font-size:14px;line-height:2}
-.ccard{background:var(--bg);border:1px solid var(--border);border-radius:var(--rl);padding:10px 14px;display:flex;align-items:center;gap:10px;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.ccard{background:var(--bg);border:1px solid var(--border);border-radius:var(--rl);padding:11px 14px;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.06)}
 .ccard:active{opacity:.85}
-.av{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;overflow:hidden}
+.cc-r1{display:flex;align-items:center;gap:8px;margin-bottom:5px}
+.cc-name{font-size:14px;font-weight:700;color:var(--text);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cc-r2{font-size:12px;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:3px}
+.cc-r3{font-size:11px;color:var(--orange);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}
+.cc-r3.muted{color:var(--text3)}
+.av{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;overflow:hidden}
 .av img{width:100%;height:100%;object-fit:cover}
 .av.residential{background:var(--res-bg);color:var(--res-txt);border:2px solid var(--orange)}
 .av.commercial{background:var(--com-bg);color:var(--com-txt);border:2px solid #1565C0}
-.ci{flex:1;min-width:0;display:flex;align-items:center;gap:8px}
-.ci-l{flex:1;min-width:0}
-.ci-r{flex-shrink:0;display:flex;flex-direction:column;align-items:flex-end;gap:3px;max-width:45%}
-.cn{font-size:14px;font-weight:700;display:flex;align-items:center;gap:5px;flex-wrap:wrap;color:var(--text)}
-.cs{font-size:12px;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
-.ct{display:flex;flex-wrap:wrap;gap:3px;justify-content:flex-end}
 .tag{font-size:11px;padding:3px 8px;border-radius:6px;background:var(--bg2);color:var(--text2);border:1px solid var(--border2);font-weight:500}
 .badge{font-size:10px;padding:3px 9px;border-radius:99px;font-weight:700}
 .badge.residential{background:var(--res-bg);color:var(--res-txt)}
@@ -939,13 +938,28 @@ function renderList(){
   renderStats();
   const el=document.getElementById('clist');
   if(!fl.length){el.innerHTML=`<div class="empty">${all.length===0?'No contacts yet.<br><br>Tap + to add.':'No results.'}</div>`;return;}
+  const today=new Date();today.setHours(0,0,0,0);
+  const todayStr=dsFromDate(today);
   el.innerHTML=fl.map(c=>{
     const pm=photos[c.id]||{};const pk=c.coverPhotoKey&&pm[c.coverPhotoKey]?c.coverPhotoKey:Object.keys(pm)[0];const ph=pk?pm[pk]:null;
     const av=ph?`<img src="${ph}"/>`:initials(c);
-    const tags=(c.jobTypes||[]).map(t=>`<span class="tag">${t}</span>`).join('');
-    const sub=c.phone||c.email||c.address||'';
     const st=c.status||'new';
-    return`<div class="ccard" onclick="openC('${c.id}')"><div class="av ${c.category}">${av}</div><div class="ci"><div class="ci-l"><div class="cn">${fullName(c)} <span class="sbadge ${st}">${STATUS_LABEL[st]}</span></div></div><div class="ci-r">${sub?`<div class="cs">${sub}</div>`:''}${tags?`<div class="ct">${tags}</div>`:''}</div></div></div>`;
+    // Row 2: phone/city • job type
+    const city=c.address?(c.address.split(',').slice(-2,-1)[0]||'').trim():'';
+    const r2parts=[c.phone||city,(c.jobTypes&&c.jobTypes[0])||''].filter(Boolean);
+    const r2=r2parts.join(' · ');
+    // Row 3: next scheduled job or recent note
+    const nextJob=Object.values(schedJobs).filter(j=>j.contactId===c.id&&j.date>=todayStr&&j.status!=='completed').sort((a,b)=>a.date.localeCompare(b.date))[0];
+    const recentNote=Object.values(notes).filter(n=>n.contactId===c.id&&!n.done).sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt))[0];
+    let r3='',r3cls='';
+    if(nextJob){r3='📅 '+( nextJob.date===todayStr?'Today':nextJob.date)+' · '+(nextJob.title||'Job');r3cls='';}
+    else if(recentNote){r3='📝 '+(recentNote.title||recentNote.body||'').slice(0,40);r3cls='';}
+    else if(c.updatedAt){r3='Updated '+new Date(c.updatedAt).toLocaleDateString('en-US',{month:'short',day:'numeric'});r3cls='muted';}
+    return`<div class="ccard" onclick="openC('${c.id}')">
+      <div class="cc-r1"><div class="av ${c.category}">${av}</div><div class="cc-name">${fullName(c)}</div><span class="sbadge ${st}">${STATUS_LABEL[st]}</span></div>
+      ${r2?`<div class="cc-r2">${r2}</div>`:''}
+      ${r3?`<div class="cc-r3 ${r3cls}">${r3}</div>`:''}
+    </div>`;
   }).join('');
 }
 
