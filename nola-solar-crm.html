@@ -365,22 +365,22 @@ textarea.fi{min-height:80px;resize:vertical}
 .cal-view-seg{display:flex;padding:8px 16px 6px;gap:6px;background:var(--bg);border-bottom:1px solid var(--border);flex-shrink:0}
 .cvs-btn{flex:1;padding:7px 4px;border:1.5px solid var(--border2);border-radius:var(--r);background:var(--bg2);font-size:12px;font-weight:600;color:var(--text2);cursor:pointer;font-family:inherit}
 .cvs-btn.on{background:var(--orange);color:#fff;border-color:var(--orange)}
-.cal-week-wrap{flex:1;overflow-y:auto;padding:10px 16px 16px;-webkit-overflow-scrolling:touch;background:var(--bg2)}
-.week-section{background:var(--bg);border:1px solid var(--border);border-radius:var(--rl);margin-bottom:8px;overflow:hidden}
-.week-section.week-today{border-color:var(--orange)}
-.week-day-hdr{padding:10px 14px;display:flex;justify-content:space-between;align-items:center;cursor:pointer}
-.week-day-hdr-name{font-size:13px;font-weight:700;color:var(--text)}
+.cal-week-wrap{flex:1;overflow-y:auto;padding:8px 14px 20px;-webkit-overflow-scrolling:touch;background:var(--bg2)}
+.week-section{background:var(--bg);border:1px solid var(--border);border-radius:var(--rl);margin-bottom:6px;overflow:hidden}
+.week-section.week-today{border-color:var(--orange);border-left:3px solid var(--orange)}
+.week-day-hdr{padding:9px 12px;display:flex;align-items:center;gap:0;cursor:pointer}
+.week-day-hdr-name{font-size:13px;font-weight:700;color:var(--text);flex:1}
 .week-section.week-today .week-day-hdr-name{color:var(--orange)}
+.week-day-no-jobs{font-size:12px;color:var(--text3);font-weight:500;margin-right:10px}
 .week-job-count{font-size:11px;font-weight:700;background:var(--orange);color:#fff;border-radius:99px;padding:1px 8px}
-.week-job-row{padding:7px 14px;display:flex;align-items:center;gap:8px;border-top:.5px solid var(--border)}
-.week-job-row.done{opacity:.55}
-.week-job-row.done .week-job-name{text-decoration:line-through}
-.week-job-time{font-size:11px;font-weight:700;color:var(--orange);min-width:52px;flex-shrink:0}
+.week-add-btn{width:26px;height:26px;border-radius:50%;border:1.5px solid var(--border2);background:var(--bg2);color:var(--text2);font-size:16px;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
+.week-job-row{padding:7px 12px;display:flex;align-items:center;gap:9px;border-top:.5px solid var(--border)}
+.week-job-row.done .week-job-name{text-decoration:line-through;color:var(--text2)}
+.week-job-check{width:22px;height:22px;border-radius:50%;border:2px solid var(--border2);background:transparent;color:var(--text3);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:all .15s}
+.week-job-row.done .week-job-check{border-color:var(--done-txt);background:var(--done-bg);color:var(--done-txt)}
+.week-job-time{font-size:11px;font-weight:600;color:var(--text2);min-width:56px;flex-shrink:0}
 .week-job-name{font-size:13px;font-weight:600;color:var(--text);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.week-job-type{font-size:11px;color:var(--text2);flex-shrink:0}
-.week-job-check{width:26px;height:26px;border-radius:50%;border:2px solid var(--border2);background:var(--bg2);color:var(--text2);font-size:13px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:background .15s,border-color .15s}
-.week-job-row.done .week-job-check{background:var(--done-bg);border-color:var(--done-txt);color:var(--done-txt)}
-.week-empty{padding:8px 14px;font-size:12px;color:var(--text3);border-top:.5px solid var(--border)}
+.week-job-type{font-size:11px;color:var(--text2);flex-shrink:0;white-space:nowrap}
 .cal-day-jobs{flex:1;overflow-y:auto;padding:10px 16px 16px;-webkit-overflow-scrolling:touch;background:var(--bg2)}
 .cal-day-title{font-size:13px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.04em;margin-bottom:10px;padding-top:2px}
 .job-slot{background:var(--bg);border:1px solid var(--border);border-radius:var(--rl);padding:13px;margin-bottom:8px;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.06);border-left:4px solid var(--orange)}
@@ -1895,18 +1895,22 @@ function renderWeekView(){
     html+=`<div class="week-section${isToday?' week-today':''}">
       <div class="week-day-hdr" onclick="selectDay('${ds}')">
         <span class="week-day-hdr-name">${label}</span>
-        ${dayJs.length?`<span class="week-job-count">${dayJs.length}</span>`:''}
+        ${dayJs.length
+          ?`<span class="week-job-count">${dayJs.length}</span>`
+          :`<span class="week-day-no-jobs">— No jobs</span>`
+        }
+        <button class="week-add-btn" onclick="event.stopPropagation();calSelDate='${ds}';showSchedForm()">+</button>
       </div>
-      ${dayJs.length?dayJs.map(j=>{
-        const t=j.time?new Date('2000-01-01T'+j.time).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}):'';
+      ${dayJs.map(j=>{
+        const t=j.time?new Date('2000-01-01T'+j.time).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',hour12:true}):'';
         const done=j.status==='completed';
         return`<div class="week-job-row${done?' done':''}" id="wjr_${j.id}">
-          <button class="week-job-check" onclick="event.stopPropagation();toggleWeekJob('${j.id}')">${done?'✓':''}</button>
+          <button class="week-job-check" onclick="event.stopPropagation();toggleWeekJob('${j.id}')">${done?'✓':'○'}</button>
           <span class="week-job-time">${t}</span>
           <span class="week-job-name">${j.customerName||'Unknown'}</span>
           ${j.jobType?`<span class="week-job-type">${j.jobType}</span>`:''}
         </div>`;
-      }).join(''):`<div class="week-empty">No jobs</div>`}
+      }).join('')}
     </div>`;
   }
   document.getElementById('cal-week-wrap').innerHTML=html;
