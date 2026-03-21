@@ -131,10 +131,10 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFo
 .dav.residential{background:var(--res-bg);color:var(--res-txt)}
 .dav.commercial{background:var(--com-bg);color:var(--com-txt)}
 .dname{font-size:20px;font-weight:700;color:var(--text)}
-.dquick{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}
-.dqbtn{display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 4px;border-radius:var(--r);border:1px solid var(--border);background:var(--bg);cursor:pointer;font-family:inherit;text-decoration:none;color:var(--text);-webkit-tap-highlight-color:transparent}
-.dqbtn .dqi{font-size:22px}
-.dqbtn .dql{font-size:11px;font-weight:600;color:var(--text2)}
+.dquick{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-bottom:14px}
+.dqbtn{display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 2px;border-radius:var(--r);border:1px solid var(--border);background:var(--bg);cursor:pointer;font-family:inherit;text-decoration:none;color:var(--text);-webkit-tap-highlight-color:transparent}
+.dqbtn .dqi{font-size:18px}
+.dqbtn .dql{font-size:10px;font-weight:600;color:var(--text2)}
 .dqbtn:active{background:var(--bg2)}
 .dqbtn.off{opacity:.3;pointer-events:none}
 .arow{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
@@ -939,8 +939,9 @@ function renderDet(c){
       <a class="dqbtn${ph?'':' off'}" href="sms:${ph}"><span class="dqi">💬</span><span class="dql">Text</span></a>
       <a class="dqbtn${addr?'':' off'}" href="${mapsUrl}" target="_blank"><span class="dqi">📍</span><span class="dql">Maps</span></a>
       <button class="dqbtn" onclick="quickNote('${c.id}','${fullName(c).replace(/'/g,"\\'")}')"><span class="dqi">📝</span><span class="dql">Note</span></button>
+      <button class="dqbtn" onclick="goSchedule('${c.id}')"><span class="dqi">📅</span><span class="dql">Schedule</span></button>
+      <button class="dqbtn" onclick="showInvForm('${c.id}')"><span class="dqi">🧾</span><span class="dql">Receipt</span></button>
     </div>
-    ${smartAction(c)}
     <div class="psec">${gal}<label class="padd" onclick="document.getElementById('photo-input').click()">+ Add Photo${pks.length?' ('+pks.length+' photos)':''}</label></div>
     <div class="icard">${rows.map(r=>`<div class="irow"><div class="ilbl">${r.l}</div><div class="ival">${r.v}</div></div>`).join('')}</div>
     <div class="arow">
@@ -954,27 +955,10 @@ function goSchedule(contactId){
   const btn=document.querySelector('.tab[onclick*="schedule"]');
   if(btn)switchTab('schedule',btn);
   showSchedForm(null);
-  // pre-select the contact in the sched form
   setTimeout(()=>{
     const c=contacts[contactId];
     if(c){schedSelContact=c;const el=document.getElementById('sched-contact-search');if(el)el.value=fullName(c);}
   },50);
-}
-
-/* ── Smart primary action ── */
-function smartAction(c){
-  const id=c.id, ph=c.phone||'', st=c.status||'new';
-  const cfg={
-    new:     {icon:'📞', label:'Call Customer',       tag:'a',  attr:`href="tel:${ph}"`,                          cls:'primary', off:!ph},
-    followup:{icon:'💬', label:'Send Follow-Up',      tag:'a',  attr:`href="sms:${ph}"`,                          cls:'primary', off:!ph},
-    pending: {icon:'📅', label:'Schedule Inspection', tag:'btn', attr:`onclick="goSchedule('${id}')"`, cls:'primary'},
-    inprocess:{icon:'📝',label:'Update Job',          tag:'btn', attr:`onclick="quickNote('${id}','${fullName(c).replace(/'/g,"\\'")}')"`,  cls:'primary'},
-    completed:{icon:'🧾', label:'Create Invoice',     tag:'btn', attr:`onclick="showInvForm('${id}')"`,            cls:'inv'},
-  };
-  const a=cfg[st]||cfg.new;
-  const el=a.tag==='a'?`<a`:`<button`;
-  const elc=a.tag==='a'?`</a>`:`</button>`;
-  return`${el} class="abtn ${a.cls}" style="width:100%;margin-bottom:14px;display:flex;align-items:center;justify-content:center;gap:8px;${a.off?'opacity:.4;pointer-events:none':''}" ${a.attr}><span>${a.icon}</span>${a.label}${elc}`;
 }
 
 /* ── Contact form ── */
