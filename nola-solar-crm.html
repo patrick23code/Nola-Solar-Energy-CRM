@@ -49,8 +49,8 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFo
 /* MAIN HDR */
 .mhdr{background:var(--orange);padding:14px 16px 12px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;border-bottom:none;box-shadow:0 2px 8px rgba(245,166,35,.3);position:relative;overflow:hidden}
 .mhdr::after{content:'';position:absolute;left:50%;top:50%;transform:translate(-50%,-48%);width:136px;height:44px;pointer-events:none;z-index:0;opacity:.98;filter:drop-shadow(0 8px 12px rgba(7,38,79,.24));background-repeat:no-repeat;background-position:center;background-size:contain;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 60'%3E%3Cdefs%3E%3ClinearGradient id='panel' x1='40' y1='14' x2='136' y2='42' gradientUnits='userSpaceOnUse'%3E%3Cstop stop-color='%236fc5ff'/%3E%3Cstop offset='.55' stop-color='%232f83d8'/%3E%3Cstop offset='1' stop-color='%230d4e93'/%3E%3C/linearGradient%3E%3ClinearGradient id='glass' x1='48' y1='14' x2='126' y2='40' gradientUnits='userSpaceOnUse'%3E%3Cstop stop-color='%23ffffff' stop-opacity='.62'/%3E%3Cstop offset='.28' stop-color='%23dff4ff' stop-opacity='.18'/%3E%3Cstop offset='1' stop-color='%23ffffff' stop-opacity='0'/%3E%3C/linearGradient%3E%3CradialGradient id='glow' cx='0' cy='0' r='1' gradientUnits='userSpaceOnUse' gradientTransform='translate(139 11) rotate(90) scale(18 24)'%3E%3Cstop stop-color='%23fff3c4' stop-opacity='.96'/%3E%3Cstop offset='1' stop-color='%23fff3c4' stop-opacity='0'/%3E%3C/radialGradient%3E%3C/defs%3E%3Cellipse cx='89' cy='48' rx='60' ry='7' fill='%23002a56' fill-opacity='.16'/%3E%3Ccircle cx='139' cy='11' r='7' fill='%23ffe08b'/%3E%3Ccircle cx='139' cy='11' r='18' fill='url(%23glow)'/%3E%3Cpath d='M40 42h96' stroke='%2392b7dc' stroke-width='2.6' stroke-linecap='round' stroke-opacity='.75'/%3E%3Cpath d='M49 47h96' stroke='%237ea8d7' stroke-width='2.6' stroke-linecap='round' stroke-opacity='.55'/%3E%3Cg stroke='%23d6ebff' stroke-width='1.1' stroke-linejoin='round'%3E%3Cpath d='M46 16h30l-9 23H37z' fill='url(%23panel)'/%3E%3Cpath d='M78 16h30l-9 23H69z' fill='url(%23panel)'/%3E%3Cpath d='M110 16h30l-9 23h-30z' fill='url(%23panel)'/%3E%3C/g%3E%3Cg stroke='%23b7dcff' stroke-opacity='.5' stroke-width='.9'%3E%3Cpath d='M54 20h22'/%3E%3Cpath d='M50 28h22'/%3E%3Cpath d='M46 36h22'/%3E%3Cpath d='M58 18l-8 21'/%3E%3Cpath d='M67 18l-8 21'/%3E%3Cpath d='M86 20h22'/%3E%3Cpath d='M82 28h22'/%3E%3Cpath d='M78 36h22'/%3E%3Cpath d='M90 18l-8 21'/%3E%3Cpath d='M99 18l-8 21'/%3E%3Cpath d='M118 20h22'/%3E%3Cpath d='M114 28h22'/%3E%3Cpath d='M110 36h22'/%3E%3Cpath d='M122 18l-8 21'/%3E%3Cpath d='M131 18l-8 21'/%3E%3C/g%3E%3Cg fill='url(%23glass)'%3E%3Cpath d='M46 16h30l-9 23H37z'/%3E%3Cpath d='M78 16h30l-9 23H69z'/%3E%3Cpath d='M110 16h30l-9 23h-30z'/%3E%3C/g%3E%3C/svg%3E")}
-.mhdr-logo{height:30px;object-fit:contain}
-.mhdr-fb{color:var(--text);font-size:15px;font-weight:800;display:none}.mhdr-fb span{color:var(--orange)}
+.mhdr-logo{height:30px;object-fit:contain;cursor:pointer}
+.mhdr-fb{color:var(--text);font-size:15px;font-weight:800;display:none;cursor:pointer}.mhdr-fb span{color:var(--orange)}
 .mhdr-r{display:flex;gap:8px;align-items:center}
 .mhdr-logo,.mhdr-fb,.mhdr-r{position:relative;z-index:1}
 .ldot{width:7px;height:7px;border-radius:50%;background:#22c55e;animation:pulse 2s infinite}
@@ -883,7 +883,7 @@ function loadInvoices(){if(!db)return;db.ref('invoices').once('value').then(s=>{
 function switchTab(tab,btn){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
   btn.classList.add('on');
-  if(tab==='contacts') showV('view-list');
+  if(tab==='contacts') goHomeToCustomers();
   else if(tab==='invoices'){showV('view-invlist');renderInvList();}
   else if(tab==='schedule'){showV('view-schedule');renderCalDays();if(calSelDate)renderDayJobs(calSelDate);}
   else if(tab==='notes'){noteContactFilter=null;showV('view-notes');renderNotesList();}
@@ -891,7 +891,19 @@ function switchTab(tab,btn){
 
 /* ── Views ── */
 function showV(id){document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));document.getElementById(id).classList.add('active');}
-function showList(){showV('view-list');renderList();}
+function setActiveTab(tab){
+  document.querySelectorAll('.tab').forEach(t=>{
+    const label=(t.textContent||'').trim().toLowerCase();
+    const isMatch=(tab==='contacts'&&label.includes('customer'))||(tab==='invoices'&&label.includes('invoice'))||(tab==='schedule'&&label.includes('schedule'))||(tab==='notes'&&label.includes('note'));
+    t.classList.toggle('on',isMatch);
+  });
+}
+function goHomeToCustomers(){
+  noteContactFilter=null;
+  setActiveTab('contacts');
+  showList();
+}
+function showList(){if(detailBackView){const v=detailBackView;detailBackView=null;showV(v);return;}showV('view-list');renderList();}
 function showAdd(){editId=null;document.getElementById('ftitle').textContent='New Contact';clearForm();showV('view-form');}
 function showEdit(){const c=contacts[selId];if(!c)return;editId=selId;document.getElementById('ftitle').textContent='Edit Contact';fillForm(c);showV('view-form');}
 function setCat(cat,btn){selCat=cat;document.querySelectorAll('.fbar .fpill').forEach(p=>p.classList.remove('on'));btn.classList.add('on');renderList();}
@@ -1003,7 +1015,8 @@ function renderList(){
 }
 
 /* ── Detail ── */
-function openC(id){selId=id;const c=contacts[id];if(!c)return;renderDet(c);showV('view-detail');}
+let detailBackView=null;
+function openC(id,backView){selId=id;const c=contacts[id];if(!c)return;detailBackView=backView||null;renderDet(c);showV('view-detail');}
 
 function renderDet(c){
   const pm=photos[c.id]||{};const pks=Object.keys(pm);
@@ -1976,7 +1989,7 @@ function renderDayJobs(ds){
         ${j.address?`<div class="job-slot-addr">📍 ${j.address}</div>`:''}
         ${j.notes?`<div class="job-slot-addr" style="margin-top:4px;font-style:italic">${j.notes}</div>`:''}
         <div class="job-slot-actions">
-          ${j.contactId?`<button class="jsa-btn primary" onclick="openC('${j.contactId}')">Open</button>`:''}
+          ${j.contactId?`<button class="jsa-btn primary" onclick="openC('${j.contactId}','view-schedule')">Open</button>`:''}
           <button class="jsa-btn" onclick="editSchedJob('${j.id}')">Edit</button>
           ${st==='completed'
             ? `<button class="jsa-btn done" onclick="markJobStatus('${j.id}','new')">✔ Completed</button>`
@@ -2501,6 +2514,9 @@ async function archiveContact(id){
     showList();
   }catch(e){toast('Error: '+e.message,4000);}
 }
+document.addEventListener('click',e=>{
+  if(e.target.closest('.mhdr-logo,.mhdr-fb')) goHomeToCustomers();
+});
 </script>
 
 <!-- Bottom sheet -->
