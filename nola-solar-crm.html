@@ -133,6 +133,18 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFo
 .dname{font-size:18px;font-weight:700;color:var(--text);line-height:1.2}
 .dmeta-line{font-size:12px;color:var(--text2);margin-top:4px;display:flex;align-items:center;gap:4px;flex-wrap:wrap}
 .dmeta-line .sbadge{cursor:pointer}
+.dots-btn{background:none;border:none;font-size:22px;color:var(--text);cursor:pointer;padding:4px 8px;line-height:1;letter-spacing:1px}
+.sheet-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;display:none;-webkit-tap-highlight-color:transparent}
+.sheet-overlay.show{display:block}
+.bottom-sheet{position:fixed;bottom:0;left:0;right:0;background:var(--bg);border-radius:20px 20px 0 0;z-index:201;padding:0 0 calc(env(safe-area-inset-bottom,0px) + 8px);transform:translateY(100%);transition:transform .25s cubic-bezier(.32,1,.23,1);box-shadow:0 -4px 24px rgba(0,0,0,.15)}
+.bottom-sheet.show{transform:translateY(0)}
+.sheet-handle{width:36px;height:4px;background:var(--border2);border-radius:99px;margin:12px auto 4px}
+.sheet-title{font-size:13px;font-weight:600;color:var(--text2);text-align:center;padding:4px 0 10px}
+.sheet-item{display:flex;align-items:center;gap:14px;padding:15px 20px;font-size:16px;font-weight:500;color:var(--text);cursor:pointer;border:none;background:none;width:100%;font-family:inherit;text-align:left;-webkit-tap-highlight-color:transparent}
+.sheet-item:active{background:var(--bg2)}
+.sheet-item .si{font-size:20px;width:28px;text-align:center}
+.sheet-item.danger{color:var(--red-txt)}
+.sheet-sep{height:.5px;background:var(--border);margin:4px 0}
 .dquick{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-bottom:14px}
 .dqbtn{display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 2px;border-radius:var(--r);border:1px solid var(--border);background:var(--bg);cursor:pointer;font-family:inherit;text-decoration:none;color:var(--text);-webkit-tap-highlight-color:transparent}
 .dqbtn .dqi{font-size:18px}
@@ -408,6 +420,7 @@ textarea.fi{min-height:80px;resize:vertical}
     <button class="fpill s-pending" id="pill-pending" onclick="setCat('status:pending',this)">Pending</button>
     <button class="fpill s-inprocess" id="pill-inprocess" onclick="setCat('status:inprocess',this)">In Process</button>
     <button class="fpill s-completed" id="pill-completed" onclick="setCat('status:completed',this)">Completed</button>
+    <button class="fpill" id="pill-archived" onclick="setCat('archived',this)">📦 Archived</button>
   </div>
   <div class="clist" id="clist"><div class="empty">Loading...</div></div>
   <div class="tabs">
@@ -512,7 +525,7 @@ textarea.fi{min-height:80px;resize:vertical}
   <div class="shdr">
     <button class="bbtn" onclick="showList()">← Back</button>
     <span class="shdr-t">Customer</span>
-    <div style="width:52px"></div>
+    <button class="dots-btn" onclick="openDetailMenu()">···</button>
   </div>
   <div class="dbody" id="dbody"></div>
 </div>
@@ -883,14 +896,17 @@ async function updateInvoiceStatus(id,status){
 /* ── Stats ── */
 function renderStats(){
   const ct=Object.fromEntries(STATUSES.map(s=>[s,0]));
-  const total=Object.values(contacts).length;
-  Object.values(contacts).forEach(c=>{const s=c.status||'new';if(ct[s]!==undefined)ct[s]++;});
+  const active=Object.values(contacts).filter(c=>!c.archived);
+  const archived=Object.values(contacts).filter(c=>!!c.archived);
+  active.forEach(c=>{const s=c.status||'new';if(ct[s]!==undefined)ct[s]++;});
   const pillAll=document.getElementById('pill-all');
-  if(pillAll) pillAll.innerHTML=`All <b style="font-size:11px;opacity:.8">${total}</b>`;
+  if(pillAll) pillAll.innerHTML=`All <b style="font-size:11px;opacity:.8">${active.length}</b>`;
   STATUSES.forEach(s=>{
     const el=document.getElementById('pill-'+s);
     if(el) el.innerHTML=`${STATUS_LABEL[s]} <b style="font-size:11px;opacity:.8">${ct[s]}</b>`;
   });
+  const pa=document.getElementById('pill-archived');
+  if(pa) pa.innerHTML=`📦 Archived${archived.length?` <b style="font-size:11px;opacity:.8">${archived.length}</b>`:''}`;
 }
 
 /* ── Contact list ── */
@@ -898,6 +914,8 @@ function renderList(){
   const s=(document.getElementById('srch')?.value||'').toLowerCase();
   const all=Object.values(contacts);
   const fl=all.filter(c=>{
+    if(selCat==='archived') return !!c.archived;
+    if(c.archived) return false;
     let mc=true;
     if(selCat==='residential'||selCat==='commercial')mc=c.category===selCat;
     else if(selCat.startsWith('status:'))mc=(c.status||'new')===selCat.replace('status:','');
@@ -974,10 +992,6 @@ function renderDet(c){
       </div>
     </div>
     <div class="icard">${rows.map(r=>`<div class="irow"><div class="ilbl">${r.l}</div><div class="ival">${r.v}</div></div>`).join('')}</div>
-    <div class="arow">
-      <button class="abtn" onclick="showEdit()">Edit</button>
-      <button class="abtn danger" onclick="delContact('${c.id}')">Delete</button>
-    </div>
     ${c.updatedAt?`<div class="dmeta">Last updated: ${new Date(c.updatedAt).toLocaleString('en-US')}</div>`:''}`;
 }
 
@@ -2234,6 +2248,38 @@ async function deleteEmailEntry(id){
   try{await db.ref('email_list/'+id).remove();toast('Deleted');}
   catch(e){toast('Error: '+e.message,4000);}
 }
+/* ── Detail menu sheet ── */
+function openDetailMenu(){
+  const archived=contacts[selId]?.archived;
+  document.getElementById('archive-sheet-lbl').textContent=archived?'Unarchive':'Archive';
+  document.getElementById('detail-sheet-overlay').classList.add('show');
+  document.getElementById('detail-sheet').classList.add('show');
+}
+function closeDetailMenu(){
+  document.getElementById('detail-sheet-overlay').classList.remove('show');
+  document.getElementById('detail-sheet').classList.remove('show');
+}
+async function archiveContact(id){
+  closeDetailMenu();
+  const already=contacts[id]?.archived;
+  try{
+    await db.ref('contacts/'+id+'/archived').set(already?null:true);
+    await db.ref('contacts/'+id+'/updatedAt').set(new Date().toISOString());
+    toast(already?'Unarchived':'Archived');
+    showList();
+  }catch(e){toast('Error: '+e.message,4000);}
+}
 </script>
+
+<!-- Bottom sheet -->
+<div class="sheet-overlay" id="detail-sheet-overlay" onclick="closeDetailMenu()"></div>
+<div class="bottom-sheet" id="detail-sheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-title">Customer</div>
+  <button class="sheet-item" onclick="closeDetailMenu();showEdit()"><span class="si">✏️</span>Edit</button>
+  <button class="sheet-item" id="archive-sheet-btn" onclick="archiveContact(selId)"><span class="si">📦</span><span id="archive-sheet-lbl">Archive</span></button>
+  <div class="sheet-sep"></div>
+  <button class="sheet-item danger" onclick="closeDetailMenu();delContact(selId)"><span class="si">🗑️</span>Delete</button>
+</div>
 </body>
 </html>
