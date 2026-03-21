@@ -61,6 +61,7 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFo
 .subbar button{font-size:11px;color:#fff;background:none;border:none;cursor:pointer;font-family:inherit;font-weight:600;opacity:.9}
 .ibtn{width:36px;height:36px;border:1.5px solid rgba(255,255,255,.4);border-radius:var(--r);background:rgba(255,255,255,.2);color:#fff;font-size:18px;display:flex;align-items:center;justify-content:center;cursor:pointer}
 .ibtn:active{opacity:.7}
+.ibtn.mail{background:linear-gradient(180deg,rgba(255,255,255,.34),rgba(120,200,255,.28));border-color:rgba(255,255,255,.82);box-shadow:0 4px 12px rgba(8,62,122,.22), inset 0 1px 0 rgba(255,255,255,.38);font-size:17px}
 .ibtn.add{background:#fff;border-color:#fff;color:var(--orange);font-size:22px;box-shadow:0 2px 8px rgba(0,0,0,.15)}
 
 /* BOTTOM TABS */
@@ -376,7 +377,7 @@ textarea.fi{min-height:80px;resize:vertical}
     <img class="mhdr-logo" src="https://nolasolarenergy.com/wp-content/uploads/2022/06/logotest.png" onerror="this.style.display='none';document.getElementById('mfb').style.display='block'" alt="Nola Solar"/>
     <div id="mfb" class="mhdr-fb" style="display:none">Nola <span>Solar</span></div>
         <div class="mhdr-r">
-      <button class="ibtn" onclick="showEmailList()" title="Email List">✉️</button>
+      <button class="ibtn mail" onclick="showEmailList()" title="Email List">✉️</button>
       <button class="ibtn add" onclick="showAdd()">+</button>
     </div>
   </div>
@@ -770,9 +771,13 @@ window.addEventListener('DOMContentLoaded',()=>{
 
 function sync(){
   document.getElementById('ldot').style.display='inline-block';
-  db.ref('contacts').on('value',s=>{contacts=s.val()||{};renderList();document.getElementById('hdrsub').textContent=Object.keys(contacts).length+' contacts • live';});
-  db.ref('photos').on('value',s=>{photos=s.val()||{};if(selId&&document.getElementById('view-detail').classList.contains('active')){const c=contacts[selId];if(c)renderDet(c);}renderList();});
-  db.ref('invoices').on('value',s=>{invoices=s.val()||{};renderInvList();});
+  const onErr=e=>{document.getElementById('hdrsub').textContent='Connection error';toast('Firebase error: '+e.message,5000);};
+  db.ref('.info/connected').on('value',s=>{
+    if(s.val()===false)document.getElementById('hdrsub').textContent='Connecting...';
+  });
+  db.ref('contacts').on('value',s=>{contacts=s.val()||{};renderList();document.getElementById('hdrsub').textContent=Object.keys(contacts).length+' contacts • live';},onErr);
+  db.ref('photos').on('value',s=>{photos=s.val()||{};if(selId&&document.getElementById('view-detail').classList.contains('active')){const c=contacts[selId];if(c)renderDet(c);}renderList();},onErr);
+  db.ref('invoices').on('value',s=>{invoices=s.val()||{};renderInvList();},onErr);
   initSchedJobs();
   initNotes();
   initEmailList();
