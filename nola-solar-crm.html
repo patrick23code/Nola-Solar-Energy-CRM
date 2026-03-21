@@ -85,25 +85,32 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFo
 .fpill{padding:7px 16px;border-radius:99px;font-size:12px;font-weight:600;border:1.5px solid var(--border2);background:var(--bg);color:var(--text2);cursor:pointer;white-space:nowrap;font-family:inherit;box-shadow:0 1px 3px rgba(0,0,0,.06)}
 .fpill.on{background:var(--orange);color:#fff;border-color:var(--orange)}
 
-/* STATS */
-.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;padding:4px 16px 12px;flex-shrink:0}
-.stat{background:var(--bg);border-radius:var(--r);padding:10px 4px;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,.07);border:1px solid var(--border)}
-.stat .sn{font-size:17px;font-weight:800;color:var(--orange)}
-.stat .sl{font-size:9px;color:var(--text2);margin-top:2px;line-height:1.3;font-weight:500}
+.fpill.s-new{background:var(--new-bg);color:var(--new-txt);border-color:var(--new-brd)}
+.fpill.s-new.on{background:var(--new-txt);color:#fff;border-color:var(--new-txt)}
+.fpill.s-followup{background:var(--followup-bg);color:var(--followup-txt);border-color:var(--followup-brd)}
+.fpill.s-followup.on{background:var(--followup-txt);color:#fff;border-color:var(--followup-txt)}
+.fpill.s-pending{background:var(--pending-bg);color:var(--pending-txt);border-color:var(--pending-brd)}
+.fpill.s-pending.on{background:var(--pending-txt);color:#fff;border-color:var(--pending-txt)}
+.fpill.s-inprocess{background:var(--inprog-bg);color:var(--inprog-txt);border-color:var(--inprog-brd)}
+.fpill.s-inprocess.on{background:var(--inprog-txt);color:#fff;border-color:var(--inprog-txt)}
+.fpill.s-completed{background:var(--done-bg);color:var(--done-txt);border-color:var(--done-brd)}
+.fpill.s-completed.on{background:var(--done-txt);color:#fff;border-color:var(--done-txt)}
 
 /* LIST */
-.clist{flex:1;overflow-y:auto;padding:0 16px 16px;display:flex;flex-direction:column;gap:10px;-webkit-overflow-scrolling:touch}
+.clist{flex:1;overflow-y:auto;padding:0 16px 16px;display:flex;flex-direction:column;gap:7px;-webkit-overflow-scrolling:touch}
 .empty{text-align:center;padding:60px 24px;color:var(--text2);font-size:14px;line-height:2}
-.ccard{background:var(--bg);border:1px solid var(--border);border-radius:var(--rl);padding:14px;display:flex;align-items:center;gap:12px;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.ccard{background:var(--bg);border:1px solid var(--border);border-radius:var(--rl);padding:10px 14px;display:flex;align-items:center;gap:10px;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.06)}
 .ccard:active{opacity:.85}
-.av{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;flex-shrink:0;overflow:hidden}
+.av{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;overflow:hidden}
 .av img{width:100%;height:100%;object-fit:cover}
 .av.residential{background:var(--res-bg);color:var(--res-txt);border:2px solid var(--orange)}
 .av.commercial{background:var(--com-bg);color:var(--com-txt);border:2px solid #1565C0}
-.ci{flex:1;min-width:0}
-.cn{font-size:15px;font-weight:700;display:flex;align-items:center;gap:5px;flex-wrap:wrap;color:var(--text)}
-.cs{font-size:13px;color:var(--text2);margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.ct{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px}
+.ci{flex:1;min-width:0;display:flex;align-items:center;gap:8px}
+.ci-l{flex:1;min-width:0}
+.ci-r{flex-shrink:0;display:flex;flex-direction:column;align-items:flex-end;gap:3px;max-width:45%}
+.cn{font-size:14px;font-weight:700;display:flex;align-items:center;gap:5px;flex-wrap:wrap;color:var(--text)}
+.cs{font-size:12px;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
+.ct{display:flex;flex-wrap:wrap;gap:3px;justify-content:flex-end}
 .tag{font-size:11px;padding:3px 8px;border-radius:6px;background:var(--bg2);color:var(--text2);border:1px solid var(--border2);font-weight:500}
 .badge{font-size:10px;padding:3px 9px;border-radius:99px;font-weight:700}
 .badge.residential{background:var(--res-bg);color:var(--res-txt)}
@@ -135,6 +142,8 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFo
 .ilbl{font-size:12px;color:var(--text2);width:80px;flex-shrink:0;padding-top:1px}
 .ival{font-size:14px;color:var(--text);flex:1;word-break:break-word}
 .ival a{color:var(--orange);text-decoration:none}
+.copy-inline{font-size:11px;padding:2px 8px;border-radius:6px;border:1px solid var(--border2);background:var(--bg2);color:var(--text2);cursor:pointer;font-family:inherit;flex-shrink:0}
+.copy-inline:active{opacity:.7}
 .dmeta{font-size:11px;color:var(--text3);text-align:center;margin-top:8px}
 .status-stepper{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:14px}
 .sstep{padding:9px 4px;border-radius:var(--r);border:1.5px solid var(--border);background:var(--bg);cursor:pointer;text-align:center;font-size:10px;font-weight:700;color:var(--text2);line-height:1.4;user-select:none;font-family:inherit;width:100%}
@@ -367,8 +376,6 @@ textarea.fi{min-height:80px;resize:vertical}
     <img class="mhdr-logo" src="https://nolasolarenergy.com/wp-content/uploads/2022/06/logotest.png" onerror="this.style.display='none';document.getElementById('mfb').style.display='block'" alt="Nola Solar"/>
     <div id="mfb" class="mhdr-fb" style="display:none">Nola <span>Solar</span></div>
         <div class="mhdr-r">
-      <div class="ldot" id="ldot" style="display:none"></div>
-      <button class="ibtn" onclick="doRefresh()">↻</button>
       <button class="ibtn" onclick="showEmailList()" title="Email List">✉️</button>
       <button class="ibtn add" onclick="showAdd()">+</button>
     </div>
@@ -376,14 +383,13 @@ textarea.fi{min-height:80px;resize:vertical}
   <div class="subbar"><span id="hdrsub">Loading...</span></div>
   <div class="srchwrap"><input type="search" id="srch" placeholder="Search name, phone, address..." oninput="renderList()"/></div>
   <div class="fbar">
-    <button class="fpill on" onclick="setCat('all',this)">All</button>
-    <button class="fpill" onclick="setCat('status:new',this)">New</button>
-    <button class="fpill" onclick="setCat('status:followup',this)">Follow Up</button>
-    <button class="fpill" onclick="setCat('status:pending',this)">Pending</button>
-    <button class="fpill" onclick="setCat('status:inprocess',this)">In Process</button>
-    <button class="fpill" onclick="setCat('status:completed',this)">Completed</button>
+    <button class="fpill on" id="pill-all" onclick="setCat('all',this)">All</button>
+    <button class="fpill s-new" id="pill-new" onclick="setCat('status:new',this)">New</button>
+    <button class="fpill s-followup" id="pill-followup" onclick="setCat('status:followup',this)">Follow Up</button>
+    <button class="fpill s-pending" id="pill-pending" onclick="setCat('status:pending',this)">Pending</button>
+    <button class="fpill s-inprocess" id="pill-inprocess" onclick="setCat('status:inprocess',this)">In Process</button>
+    <button class="fpill s-completed" id="pill-completed" onclick="setCat('status:completed',this)">Completed</button>
   </div>
-  <div class="stats" id="stats"></div>
   <div class="clist" id="clist"><div class="empty">Loading...</div></div>
   <div class="tabs">
     <button class="tab on" onclick="switchTab('contacts',this)"><span class="ticon">👥</span>Customers</button>
@@ -854,12 +860,15 @@ async function updateInvoiceStatus(id,status){
 
 /* ── Stats ── */
 function renderStats(){
-  const colorMap={new:'var(--new-txt)',followup:'var(--followup-txt)',pending:'var(--pending-txt)',inprocess:'var(--inprog-txt)',completed:'var(--done-txt)'};
   const ct=Object.fromEntries(STATUSES.map(s=>[s,0]));
+  const total=Object.values(contacts).length;
   Object.values(contacts).forEach(c=>{const s=c.status||'new';if(ct[s]!==undefined)ct[s]++;});
-  document.getElementById('stats').innerHTML=STATUSES.map(s=>`
-    <div class="stat"><div class="sn" style="color:${colorMap[s]}">${ct[s]}</div><div class="sl">${STATUS_LABEL[s]}</div></div>
-  `).join('');
+  const pillAll=document.getElementById('pill-all');
+  if(pillAll) pillAll.innerHTML=`All <b style="font-size:11px;opacity:.8">${total}</b>`;
+  STATUSES.forEach(s=>{
+    const el=document.getElementById('pill-'+s);
+    if(el) el.innerHTML=`${STATUS_LABEL[s]} <b style="font-size:11px;opacity:.8">${ct[s]}</b>`;
+  });
 }
 
 /* ── Contact list ── */
@@ -884,7 +893,7 @@ function renderList(){
     const tags=(c.jobTypes||[]).map(t=>`<span class="tag">${t}</span>`).join('');
     const sub=c.phone||c.email||c.address||'';
     const st=c.status||'new';
-    return`<div class="ccard" onclick="openC('${c.id}')"><div class="av ${c.category}">${av}</div><div class="ci"><div class="cn">${fullName(c)} <span class="sbadge ${st}">${STATUS_LABEL[st]}</span></div>${sub?`<div class="cs">${sub}</div>`:''}${tags?`<div class="ct">${tags}</div>`:''}</div></div>`;
+    return`<div class="ccard" onclick="openC('${c.id}')"><div class="av ${c.category}">${av}</div><div class="ci"><div class="ci-l"><div class="cn">${fullName(c)} <span class="sbadge ${st}">${STATUS_LABEL[st]}</span></div></div><div class="ci-r">${sub?`<div class="cs">${sub}</div>`:''}${tags?`<div class="ct">${tags}</div>`:''}</div></div></div>`;
   }).join('');
 }
 
@@ -898,8 +907,8 @@ function renderDet(c){
   const st=c.status||'new';
   const rows=[
     c.projectName&&{l:'Project Name',v:c.projectName},
-    c.phone&&{l:'Phone',v:`<a href="tel:${c.phone}">${c.phone}</a>`},
-    c.email&&{l:'Email',v:`<a href="mailto:${c.email}">${c.email}</a>`},
+    c.phone&&{l:'Phone',v:`<div style="display:flex;align-items:center;gap:8px"><a href="tel:${c.phone}">${c.phone}</a><button class="copy-inline" onclick="copyText('${c.phone}')">Copy</button></div>`},
+    c.email&&{l:'Email',v:`<div style="display:flex;align-items:center;gap:8px"><a href="mailto:${c.email}">${c.email}</a><button class="copy-inline" onclick="copyText('${c.email}')">Copy</button></div>`},
     c.address&&{l:'Address',v:c.address},
     (c.jobTypes&&c.jobTypes.length)&&{l:'Job Type',v:c.jobTypes.join(', ')},
     c.notes&&{l:'Notes',v:c.notes.replace(/\n/g,'<br>')},
@@ -910,10 +919,6 @@ function renderDet(c){
   document.getElementById('dbody').innerHTML=`
     <div class="dhero"><div class="dav ${c.category}">${av}</div><div><div class="dname">${fullName(c)}</div><div style="display:flex;gap:5px;margin-top:6px;flex-wrap:wrap"><span class="sbadge ${st}">${STATUS_LABEL[st]}</span></div></div></div>
     <div class="status-stepper">${stepper}</div>
-    <div class="arow">
-      ${c.phone?`<a class="abtn primary" href="tel:${c.phone}">Call</a>`:'<div></div>'}
-      ${c.email?`<a class="abtn" href="mailto:${c.email}">Email</a>`:'<div></div>'}
-    </div>
     <button class="abtn inv" style="width:100%;margin-bottom:14px" onclick="showInvForm('${c.id}')">🧾 Create Invoice / Receipt</button>
     <div class="psec">${gal}<label class="padd" onclick="document.getElementById('photo-input').click()">+ Add Photo${pks.length?' ('+pks.length+' photos)':''}</label></div>
     <div class="icard">${rows.map(r=>`<div class="irow"><div class="ilbl">${r.l}</div><div class="ival">${r.v}</div></div>`).join('')}</div>
@@ -2063,6 +2068,7 @@ async function deleteNote(id){
 
 /* ── Email List ── */
 let emailEntries={};
+let editEmailId=null;
 
 function initEmailList(){
   db.ref('email_list').on('value',s=>{
@@ -2077,8 +2083,19 @@ function showEmailList(){
 }
 
 function showEmailForm(){
+  editEmailId=null;
   document.getElementById('ef-name').value='';
   document.getElementById('ef-email').value='';
+  document.querySelector('#view-emailform .shdr-t').textContent='Add Email';
+  showV('view-emailform');
+}
+
+function editEmailEntry(id){
+  const e=emailEntries[id];if(!e)return;
+  editEmailId=id;
+  document.getElementById('ef-name').value=e.name||'';
+  document.getElementById('ef-email').value=e.email||'';
+  document.querySelector('#view-emailform .shdr-t').textContent='Edit Email';
   showV('view-emailform');
 }
 
@@ -2099,7 +2116,7 @@ function renderEmailList(){
   }
   el.innerHTML=all.map(e=>{
     const ltr=(e.name?e.name[0]:e.email[0]).toUpperCase();
-    const del=e.source==='manual'?`<button class="email-act-btn danger" onclick="deleteEmailEntry('${e.id}')">Delete</button>`:'';
+    const manualBtns=e.source==='manual'?`<button class="email-act-btn" onclick="editEmailEntry('${e.id}')">Edit</button><button class="email-act-btn danger" onclick="deleteEmailEntry('${e.id}')">Delete</button>`:'';
     return`<div class="email-card">
       <div class="email-av">${ltr}</div>
       <div class="email-info">
@@ -2109,16 +2126,17 @@ function renderEmailList(){
       </div>
       <div class="email-actions">
         <button class="email-act-btn" onclick="copyEmail('${e.email}')">Copy</button>
-        ${del}
+        ${manualBtns}
       </div>
     </div>`;
   }).join('');
 }
 
-function copyEmail(email){
-  navigator.clipboard.writeText(email)
+function copyEmail(email){copyText(email);}
+function copyText(val){
+  navigator.clipboard.writeText(val)
     .then(()=>toast('Copied!'))
-    .catch(()=>{const t=document.createElement('textarea');t.value=email;document.body.appendChild(t);t.select();document.execCommand('copy');document.body.removeChild(t);toast('Copied!');});
+    .catch(()=>{const t=document.createElement('textarea');t.value=val;document.body.appendChild(t);t.select();document.execCommand('copy');document.body.removeChild(t);toast('Copied!');});
 }
 
 async function saveEmailEntry(){
@@ -2126,10 +2144,16 @@ async function saveEmailEntry(){
   const email=document.getElementById('ef-email').value.trim();
   if(!email){toast('Email is required!');return;}
   const btn=document.getElementById('email-savebtn');btn.disabled=true;
-  const entry={id:'em_'+Date.now(),name,email,addedAt:new Date().toISOString()};
   try{
-    await db.ref('email_list/'+entry.id).set(entry);
-    btn.disabled=false;toast('Email saved!');
+    if(editEmailId){
+      await db.ref('email_list/'+editEmailId).update({name,email});
+      toast('Updated!');
+    }else{
+      const entry={id:'em_'+Date.now(),name,email,addedAt:new Date().toISOString()};
+      await db.ref('email_list/'+entry.id).set(entry);
+      toast('Email saved!');
+    }
+    btn.disabled=false;editEmailId=null;
     showV('view-emails');renderEmailList();
   }catch(e){btn.disabled=false;toast('Error: '+e.message,4000);}
 }
