@@ -3,9 +3,9 @@
   "private": true,
   "version": "1.0.0",
   "scripts": {
-    "dev": "vite --host 127.0.0.1 --open /nola-solar-crm.html",
+    "dev": "vite --host 0.0.0.0 --open /nola-solar-crm.html",
     "build": "vite build",
-    "preview": "vite preview --host 127.0.0.1 --open /nola-solar-crm.html"
+    "preview": "vite preview --host 0.0.0.0 --open /nola-solar-crm.html"
   },
   "devDependencies": {
     "vite": "^7.1.0"

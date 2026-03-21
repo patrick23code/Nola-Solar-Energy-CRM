@@ -55,6 +55,12 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFo
 .mhdr-logo,.mhdr-fb,.mhdr-r{position:relative;z-index:1}
 .ldot{width:7px;height:7px;border-radius:50%;background:#22c55e;animation:pulse 2s infinite}
 @media (max-width:420px){.mhdr::after{width:116px;height:38px;transform:translate(-50%,-48%)}}
+.wx-strip{background:#FFF7E8;padding:5px 16px;display:flex;align-items:center;gap:6px;overflow-x:auto;scrollbar-width:none;flex-shrink:0;white-space:nowrap;border-bottom:1px solid #EDE8DF}
+.wx-strip::-webkit-scrollbar{display:none}
+.wx-strip span{font-size:11px;color:#1E293B;font-weight:500;flex-shrink:0}
+.wx-strip .wx-sep{color:#D6D3D1;font-size:10px}
+.wx-good{background:#dcfce7;color:#166534!important;font-weight:700!important;border-radius:99px;padding:1px 7px;font-size:10px!important}
+.wx-warn{background:#fef9c3;color:#854d0e!important;font-weight:700!important;border-radius:99px;padding:1px 7px;font-size:10px!important}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 .subbar{background:var(--orange-d);padding:4px 16px 6px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;border-bottom:none}
 .subbar span{font-size:11px;color:rgba(255,255,255,.8)}
@@ -226,6 +232,15 @@ textarea.fi{min-height:80px;resize:vertical}
 .jchk.on{border-color:var(--orange);background:var(--orange-light);color:var(--orange-d)}
 .jdot{width:14px;height:14px;border-radius:3px;border:1.5px solid currentColor;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .jdot.on::after{content:'';display:block;width:7px;height:7px;border-radius:1px;background:currentColor}
+.jt-sel{display:flex;align-items:center;gap:6px;min-height:42px;padding:8px 12px;border:1.5px solid var(--border);border-radius:var(--r);background:var(--bg);cursor:pointer;flex-wrap:wrap}
+.jt-sel:active{border-color:var(--orange)}
+.jt-tag{display:inline-flex;align-items:center;gap:4px;background:var(--orange-light);color:var(--orange-d);border-radius:99px;padding:3px 10px;font-size:12px;font-weight:600;flex-shrink:0}
+.jt-tag .jt-x{font-size:14px;line-height:1;cursor:pointer;color:var(--orange-d);opacity:.7}
+.jt-add{font-size:13px;color:var(--orange);font-weight:600;flex-shrink:0;margin-left:auto}
+.jt-placeholder{font-size:13px;color:var(--text3);flex:1}
+.js-pill{display:flex;align-items:center;gap:8px;padding:11px 16px;cursor:pointer;border-radius:var(--r);border:1.5px solid var(--border);background:var(--bg);font-size:14px;color:var(--text);user-select:none;-webkit-tap-highlight-color:transparent}
+.js-pill.on{border-color:var(--orange);background:var(--orange-light);color:var(--orange-d)}
+.js-check{width:20px;height:20px;border-radius:5px;border:1.5px solid currentColor;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:12px}
 
 /* ── INVOICE LIST ── */
 .inv-card{background:var(--bg);border:.5px solid var(--border);border-radius:var(--rl);padding:14px;cursor:pointer;display:flex;justify-content:space-between;align-items:center}
@@ -425,6 +440,7 @@ textarea.fi{min-height:80px;resize:vertical}
       <button class="ibtn add" onclick="showAdd()">+</button>
     </div>
   </div>
+  <div class="wx-strip" id="wx-strip"><span style="opacity:.6">Loading weather...</span></div>
   <div class="srchwrap"><input type="search" id="srch" placeholder="Search name, phone, address..." oninput="renderList()"/></div>
   <div class="fbar">
     <button class="fpill on" id="pill-all" onclick="setCat('all',this)">All</button>
@@ -572,7 +588,7 @@ textarea.fi{min-height:80px;resize:vertical}
     <div class="fg"><label>Title</label><input class="fi" id="note-title" type="text" placeholder="Note title..."/></div>
     <div class="fg"><label>Note</label><textarea class="fi" id="note-body" placeholder="Write your note here..." style="min-height:160px"></textarea></div>
     <div class="fg"><label>Related Customer (optional)</label>
-      <input class="fi" id="note-customer-search" placeholder="Search customers..." oninput="renderNoteCustomerSearch()" style="margin-bottom:6px"/>
+      <input class="fi" id="note-customer-search" placeholder="Tap to pick a customer..." oninput="renderNoteCustomerSearch()" onfocus="renderNoteCustomerSearch()" style="margin-bottom:6px"/>
       <div id="note-customer-results" style="display:none"></div>
     </div>
   </div>
@@ -582,7 +598,7 @@ textarea.fi{min-height:80px;resize:vertical}
 <div class="view" id="view-emails">
   <div class="shdr">
     <button class="bbtn" onclick="showV('view-list')">← Back</button>
-    <span class="shdr-t">Email List</span>
+    <span class="shdr-t">Customer E-mail List</span>
     <button class="ibtn add" onclick="showEmailForm()">+</button>
   </div>
   <div class="subbar"><span id="email-list-sub">Customer Emails</span></div>
@@ -618,7 +634,12 @@ textarea.fi{min-height:80px;resize:vertical}
     <div class="fg"><label>Phone</label><input class="fi" id="f-phone" type="tel" placeholder="+1 (504) 000-0000"/></div>
     <div class="fg"><label>Email</label><input class="fi" id="f-email" type="email" placeholder="example@email.com"/></div>
     <div class="fg"><label>Address / Project Location</label><input class="fi" id="f-addr" type="text" placeholder="Street, city, state"/></div>
-    <div class="fg"><label>Job Type</label><div class="jgrid" id="jgrid"></div></div>
+    <div class="fg"><label>Job Type</label>
+      <div class="jt-sel" id="jt-sel" onclick="openJobSheet()">
+        <div id="jt-tags" style="display:flex;flex-wrap:wrap;gap:5px;flex:1"></div>
+        <span class="jt-add">+ Add</span>
+      </div>
+    </div>
     <div class="fg">
       <label>Status</label>
       <select class="fi" id="f-status">
@@ -811,6 +832,7 @@ window.addEventListener('DOMContentLoaded',()=>{
   document.getElementById('inv-date').value=new Date().toISOString().split('T')[0];
   document.getElementById('inv-valid-until').value=getDateOffset(7);
   syncInvDocumentType();
+  fetchWeather();
 });
 
 function sync(){
@@ -826,6 +848,23 @@ function sync(){
   initEmailList();
 }
 function doRefresh(){if(!db)return;db.ref('contacts').once('value').then(s=>{contacts=s.val()||{};renderList();toast('Refreshed');});}
+
+async function fetchWeather(){
+  const el=document.getElementById('wx-strip');if(!el)return;
+  try{
+    const r=await fetch('https://api.open-meteo.com/v1/forecast?latitude=29.9511&longitude=-90.0715&current=temperature_2m,precipitation_probability,windspeed_10m,weathercode&temperature_unit=fahrenheit&windspeed_unit=mph');
+    const d=await r.json();
+    const c=d.current;
+    const temp=Math.round(c.temperature_2m);
+    const rain=c.precipitation_probability;
+    const wind=Math.round(c.windspeed_10m);
+    const code=c.weathercode;
+    const icon=code===0?'☀️':code<=2?'🌤️':code<=3?'⛅':code<=45?'🌫️':code<=67?'🌧️':code<=77?'🌨️':code<=82?'🌦️':'⛈️';
+    const goodForJob=temp>=50&&temp<=95&&rain<50&&wind<25;
+    const jobLabel=goodForJob?'<span class="wx-good">✅ Good for jobs</span>':'<span class="wx-warn">⚠️ Check conditions</span>';
+    el.innerHTML=`<span>${icon} ${temp}°F</span><span class="wx-sep">·</span><span>New Orleans</span><span class="wx-sep">·</span><span>Rain ${rain}%</span><span class="wx-sep">·</span><span>Wind ${wind} mph</span><span class="wx-sep">·</span>${jobLabel}`;
+  }catch(e){el.innerHTML='<span style="opacity:.5">Weather unavailable</span>';}
+}
 function loadInvoices(){if(!db)return;db.ref('invoices').once('value').then(s=>{invoices=s.val()||{};renderInvList();toast('Refreshed');});}
 
 /* ── Tab switching ── */
@@ -835,7 +874,7 @@ function switchTab(tab,btn){
   if(tab==='contacts') showV('view-list');
   else if(tab==='invoices'){showV('view-invlist');renderInvList();}
   else if(tab==='schedule'){showV('view-schedule');renderCalDays();if(calSelDate)renderDayJobs(calSelDate);}
-  else if(tab==='notes'){showV('view-notes');renderNotesList();}
+  else if(tab==='notes'){noteContactFilter=null;showV('view-notes');renderNotesList();}
 }
 
 /* ── Views ── */
@@ -945,7 +984,9 @@ function renderList(){
     const tags=(c.jobTypes||[]).map(t=>`<span class="tag">${t}</span>`).join('');
     const sub=c.phone||c.email||c.address||'';
     const st=c.status||'new';
-    return`<div class="ccard" onclick="openC('${c.id}')"><div class="av ${c.category}">${av}</div><div class="ci"><div class="ci-l"><div class="cn">${fullName(c)} <span class="sbadge ${st}">${STATUS_LABEL[st]}</span></div></div><div class="ci-r">${sub?`<div class="cs">${sub}</div>`:''}${tags?`<div class="ct">${tags}</div>`:''}</div></div></div>`;
+    const nc=Object.values(notes).filter(n=>n.contactId===c.id).length;
+    const noteDot=nc?`<span style="font-size:10px;color:var(--orange);font-weight:700">📝 ${nc}</span>`:'';
+    return`<div class="ccard" onclick="openC('${c.id}')"><div class="av ${c.category}">${av}</div><div class="ci"><div class="ci-l"><div class="cn">${fullName(c)} <span class="sbadge ${st}">${STATUS_LABEL[st]}</span></div></div><div class="ci-r">${noteDot}${sub?`<div class="cs">${sub}</div>`:''}${tags?`<div class="ct">${tags}</div>`:''}</div></div></div>`;
   }).join('');
 }
 
@@ -977,8 +1018,10 @@ function renderDet(c){
   const jobMeta=(c.jobTypes&&c.jobTypes.length)?c.jobTypes[0]:'';
   const addedMeta=c.createdAt?new Date(c.createdAt).toLocaleDateString('en-US',{month:'short',day:'numeric'}):'';
   const metaParts=[jobMeta,addedMeta?'Added '+addedMeta:''].filter(Boolean).join(' · ');
+  const cNotes=Object.values(notes).filter(n=>n.contactId===c.id);
+  const noteBadge=cNotes.length?`<button onclick="openContactNotes('${c.id}')" style="display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:700;color:var(--orange);background:rgba(255,140,0,.1);border:1px solid rgba(255,140,0,.3);border-radius:99px;padding:2px 8px;cursor:pointer;flex-shrink:0">📝 ${cNotes.length}</button>`:'';
   document.getElementById('dbody').innerHTML=`
-    <div class="dhero"><div class="dav ${c.category}">${av}</div><div style="flex:1;min-width:0"><div class="dname">${fullName(c)}</div><div class="dmeta-line"><span class="sbadge ${st}" onclick="toggleStatusPicker()" title="Tap to change">${STATUS_LABEL[st]} ▾</span>${metaParts?`<span style="color:var(--border2)">·</span><span>${metaParts}</span>`:''}</div></div></div>
+    <div class="dhero"><div class="dav ${c.category}">${av}</div><div style="flex:1;min-width:0"><div class="dname">${fullName(c)}</div><div class="dmeta-line"><span class="sbadge ${st}" onclick="toggleStatusPicker()" title="Tap to change">${STATUS_LABEL[st]} ▾</span>${metaParts?`<span style="color:var(--border2)">·</span><span>${metaParts}</span>`:''} ${noteBadge}</div></div></div>
     <div class="status-picker" id="status-picker" style="display:none;margin-bottom:14px">${pickerOpts}</div>
     <div class="dquick">
       <a class="dqbtn${ph?'':' off'}" href="tel:${ph}"><span class="dqi">📞</span><span class="dql">Call</span></a>
@@ -1019,18 +1062,50 @@ function goSchedule(contactId){
 }
 
 /* ── Contact form ── */
-function initJobs(){
-  document.getElementById('jgrid').innerHTML=JOBS.map(j=>{
-    const k='j_'+j.replace(/[\s\/]/g,'_');
-    return`<div class="jchk" id="${k}" onclick="togJob('${j}')"><div class="jdot" id="d_${k}"></div>${j}</div>`;
-  }).join('')+`<div class="jchk" id="j-other-chk" onclick="togOther()" style="grid-column:1/-1"><div class="jdot" id="d_j-other-chk"></div>Other</div><div id="j-other-wrap" style="display:none;grid-column:1/-1;margin-top:-2px"><input class="fi" id="j-other-input" type="text" placeholder="Describe the job type..."/></div>`;
+let selJobTypes=[];
+function initJobs(){renderJobTags();}
+
+function renderJobTags(){
+  const el=document.getElementById('jt-tags');if(!el)return;
+  if(!selJobTypes.length){el.innerHTML='<span class="jt-placeholder">Tap to select...</span>';return;}
+  el.innerHTML=selJobTypes.map(j=>`<span class="jt-tag">${j}<span class="jt-x" onclick="event.stopPropagation();removeJobType('${j.replace(/'/g,"\\'")}')">×</span></span>`).join('');
+}
+function removeJobType(j){selJobTypes=selJobTypes.filter(x=>x!==j);renderJobTags();}
+
+function openJobSheet(){
+  const list=document.getElementById('job-sheet-list');
+  list.innerHTML=JOBS.map(j=>{
+    const on=selJobTypes.includes(j);
+    return`<div class="js-pill${on?' on':''}" id="jsp_${j.replace(/[\s\/]/g,'_')}" onclick="togJobSheet('${j.replace(/'/g,"\\'")}')"><span class="js-check">${on?'✓':''}</span>${j}</div>`;
+  }).join('');
+  document.getElementById('job-custom-input').value='';
+  document.getElementById('job-sheet-overlay').classList.add('show');
+  document.getElementById('job-sheet').classList.add('show');
+}
+function closeJobSheet(){
+  document.getElementById('job-sheet-overlay').classList.remove('show');
+  document.getElementById('job-sheet').classList.remove('show');
+  renderJobTags();
+}
+function togJobSheet(j){
+  const idx=selJobTypes.indexOf(j);
+  if(idx>=0)selJobTypes.splice(idx,1);else selJobTypes.push(j);
+  const k='jsp_'+j.replace(/[\s\/]/g,'_');
+  const el=document.getElementById(k);
+  if(el){el.classList.toggle('on',selJobTypes.includes(j));el.querySelector('.js-check').textContent=selJobTypes.includes(j)?'✓':'';}
+  syncContactStatusFromJobs();
+}
+function addCustomJob(){
+  const v=document.getElementById('job-custom-input').value.trim();
+  if(!v)return;
+  if(!selJobTypes.includes(v))selJobTypes.push(v);
+  document.getElementById('job-custom-input').value='';
+  renderJobTags();
 }
 function clearForm(){
   ['f-project','f-fn','f-ln','f-phone','f-email','f-addr','f-notes'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
   document.getElementById('f-status').value='new';
-  JOBS.forEach(j=>{const k='j_'+j.replace(/[\s\/]/g,'_');document.getElementById(k)?.classList.remove('on');document.getElementById('d_'+k)?.classList.remove('on');});
-  document.getElementById('j-other-chk')?.classList.remove('on');document.getElementById('d_j-other-chk')?.classList.remove('on');
-  document.getElementById('j-other-wrap').style.display='none';document.getElementById('j-other-input').value='';
+  selJobTypes=[];renderJobTags();
   formPhotos={};renderFormGallery();
 }
 function fillForm(c){
@@ -1042,36 +1117,23 @@ function fillForm(c){
   document.getElementById('f-addr').value=c.address||'';
   document.getElementById('f-status').value=c.status||'new';
   document.getElementById('f-notes').value=c.notes||'';
-  JOBS.forEach(j=>{const k='j_'+j.replace(/[\s\/]/g,'_');const on=(c.jobTypes||[]).includes(j);document.getElementById(k)?.classList.toggle('on',on);document.getElementById('d_'+k)?.classList.toggle('on',on);});
-  const otherJob=(c.jobTypes||[]).find(j=>!JOBS.includes(j));
-  if(otherJob){document.getElementById('j-other-chk')?.classList.add('on');document.getElementById('d_j-other-chk')?.classList.add('on');document.getElementById('j-other-wrap').style.display='block';document.getElementById('j-other-input').value=otherJob;}
-  else{document.getElementById('j-other-chk')?.classList.remove('on');document.getElementById('d_j-other-chk')?.classList.remove('on');document.getElementById('j-other-wrap').style.display='none';document.getElementById('j-other-input').value='';}
+  selJobTypes=(c.jobTypes||[]).slice();renderJobTags();
   formPhotos=Object.assign({},photos[c.id]||{});renderFormGallery();
 }
 function syncContactStatusFromJobs(){
   if(editId)return;
-  const followUpOn=document.getElementById('j_'+('Follow Up').replace(/[\s\/]/g,'_'))?.classList.contains('on');
-  const statusEl=document.getElementById('f-status');
-  if(!statusEl)return;
+  const statusEl=document.getElementById('f-status');if(!statusEl)return;
+  const followUpOn=selJobTypes.includes('Follow Up');
   if(followUpOn&&statusEl.value==='new')statusEl.value='followup';
   else if(!followUpOn&&statusEl.value==='followup')statusEl.value='new';
 }
-function togJob(j){
-  const k='j_'+j.replace(/[\s\/]/g,'_');
-  document.getElementById(k)?.classList.toggle('on');
-  document.getElementById('d_'+k)?.classList.toggle('on');
-  syncContactStatusFromJobs();
-}
-function togOther(){const on=document.getElementById('j-other-chk')?.classList.toggle('on');document.getElementById('d_j-other-chk')?.classList.toggle('on');const w=document.getElementById('j-other-wrap');w.style.display=on?'block':'none';if(!on)document.getElementById('j-other-input').value='';}
 async function saveContact(){
   const projectName=document.getElementById('f-project').value.trim();
   const fn=document.getElementById('f-fn').value.trim();
   if(!fn&&!projectName){toast('Project name or first name is required!');return;}
   const btn=document.getElementById('savebtn');btn.disabled=true;btn.textContent='Saving...';
   const ln=document.getElementById('f-ln').value.trim();
-  const jobTypes=JOBS.filter(j=>document.getElementById('j_'+j.replace(/[\s\/]/g,'_'))?.classList.contains('on'));
-  const otherVal=document.getElementById('j-other-chk')?.classList.contains('on')?document.getElementById('j-other-input').value.trim():'';
-  if(otherVal)jobTypes.push(otherVal);
+  const jobTypes=selJobTypes.slice();
   const now=new Date().toISOString();const id=editId||('c_'+Date.now());
   const ex=editId?contacts[editId]:null;
   const displayName=[fn,ln].filter(Boolean).join(' ')||projectName;
@@ -2043,7 +2105,7 @@ async function deleteSchedJob(id){
 /* ══════════════════════════════
    NOTES SYSTEM
 ══════════════════════════════ */
-let notes={}, noteEditId=null, noteSelCustomer=null;
+let notes={}, noteEditId=null, noteSelCustomer=null, noteContactFilter=null;
 
 function initNotes(){
   db.ref('notes').on('value',s=>{
@@ -2054,13 +2116,18 @@ function initNotes(){
 }
 
 function renderNotesList(){
-  const all=Object.values(notes).sort((a,b)=>{
+  let all=Object.values(notes).sort((a,b)=>{
     if(!!a.done!==!!b.done) return a.done?1:-1;
     return new Date(b.createdAt)-new Date(a.createdAt);
   });
-  document.getElementById('notes-hdrsub').textContent=all.length+' notes';
+  if(noteContactFilter){
+    all=all.filter(n=>n.contactId===noteContactFilter.id);
+    document.getElementById('notes-hdrsub').innerHTML=`<span style="color:var(--orange);font-weight:700">👤 ${fullName(noteContactFilter)}</span> <button onclick="clearNoteFilter()" style="margin-left:8px;font-size:11px;color:var(--text2);background:var(--bg2);border:1px solid var(--border);border-radius:99px;padding:2px 8px;cursor:pointer">✕ All Notes</button>`;
+  } else {
+    document.getElementById('notes-hdrsub').textContent=all.length+' notes';
+  }
   const el=document.getElementById('notes-list');
-  if(!all.length){el.innerHTML='<div class="empty">No notes yet.<br><br>Tap + to add your first note.</div>';return;}
+  if(!all.length){el.innerHTML=noteContactFilter?`<div class="empty">No notes for ${fullName(noteContactFilter)} yet.</div>`:'<div class="empty">No notes yet.<br><br>Tap + to add your first note.</div>';return;}
   el.innerHTML=all.map(n=>`
     <div class="note-card${n.done?' done':''}">
       <button class="note-check${n.done?' done':''}" onclick="toggleNoteDone('${n.id}')">${n.done?'✓':''}</button>
@@ -2077,6 +2144,14 @@ function renderNotesList(){
         </div>
       </div>
     </div>`).join('');
+}
+
+function clearNoteFilter(){noteContactFilter=null;renderNotesList();}
+function openContactNotes(cid){
+  const c=contacts[cid];if(!c)return;
+  noteContactFilter=c;
+  showV('view-notes');
+  renderNotesList();
 }
 
 function showNoteForm(id){
@@ -2110,8 +2185,8 @@ function quickNote(contactId, contactName){
 function renderNoteCustomerSearch(){
   const s=document.getElementById('note-customer-search').value.toLowerCase();
   const res=document.getElementById('note-customer-results');
-  if(!s){res.style.display='none';return;}
-  const fl=Object.values(contacts).filter(c=>fullName(c).toLowerCase().includes(s)).slice(0,5);
+  const all=Object.values(contacts).filter(c=>!c.archived);
+  const fl=s?all.filter(c=>fullName(c).toLowerCase().includes(s)):all;
   if(!fl.length){res.style.display='none';return;}
   res.style.display='block';
   res.className='contact-picker';
@@ -2389,6 +2464,25 @@ async function archiveContact(id){
   <button class="sheet-item" id="archive-sheet-btn" onclick="archiveContact(selId)"><span class="si">📦</span><span id="archive-sheet-lbl">Archive</span></button>
   <div class="sheet-sep"></div>
   <button class="sheet-item danger" onclick="closeDetailMenu();delContact(selId)"><span class="si">🗑️</span>Delete</button>
+</div>
+
+<!-- Job type sheet -->
+<div class="sheet-overlay" id="job-sheet-overlay" onclick="closeJobSheet()"></div>
+<div class="bottom-sheet" id="job-sheet" style="max-height:80vh;display:flex;flex-direction:column">
+  <div class="sheet-handle"></div>
+  <div class="sheet-title">Select Job Type</div>
+  <div id="job-sheet-list" style="flex:1;overflow-y:auto;padding:0 16px;display:flex;flex-direction:column;gap:7px"></div>
+  <div style="padding:12px 16px 4px">
+    <div class="sheet-sep" style="margin-bottom:10px"></div>
+    <div style="font-size:12px;color:var(--text2);margin-bottom:6px;font-weight:600">Or type a custom job:</div>
+    <div style="display:flex;gap:8px">
+      <input class="fi" id="job-custom-input" type="text" placeholder="e.g. Battery Backup..." style="flex:1;margin:0"/>
+      <button onclick="addCustomJob()" style="background:var(--orange);color:#fff;border:none;border-radius:var(--r);padding:0 16px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;flex-shrink:0">Add</button>
+    </div>
+  </div>
+  <div style="padding:10px 16px 4px">
+    <button onclick="closeJobSheet()" style="width:100%;padding:12px;background:var(--bg2);border:none;border-radius:var(--r);font-size:15px;font-weight:600;color:var(--text);cursor:pointer;font-family:inherit">Done</button>
+  </div>
 </div>
 
 <!-- Photo preview -->
