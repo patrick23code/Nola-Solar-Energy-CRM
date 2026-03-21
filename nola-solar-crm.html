@@ -288,6 +288,23 @@ textarea.fi{min-height:80px;resize:vertical}
 .cal-day.today::after,.cal-day.today.has-jobs::after,.cal-day.today.all-done::after{background:rgba(255,255,255,.9)}
 .cal-day.selected.has-jobs::after{background:var(--orange-d)}
 .cal-day.selected.all-done::after{background:var(--done-txt)}
+.cal-view-seg{display:flex;padding:8px 16px 6px;gap:6px;background:var(--bg);border-bottom:1px solid var(--border);flex-shrink:0}
+.cvs-btn{flex:1;padding:7px 4px;border:1.5px solid var(--border2);border-radius:var(--r);background:var(--bg2);font-size:12px;font-weight:600;color:var(--text2);cursor:pointer;font-family:inherit}
+.cvs-btn.on{background:var(--orange);color:#fff;border-color:var(--orange)}
+.cal-week-wrap{flex:1;overflow-y:auto;padding:10px 16px 16px;-webkit-overflow-scrolling:touch;background:var(--bg2)}
+.week-section{background:var(--bg);border:1px solid var(--border);border-radius:var(--rl);margin-bottom:8px;overflow:hidden}
+.week-section.week-today{border-color:var(--orange)}
+.week-day-hdr{padding:10px 14px;display:flex;justify-content:space-between;align-items:center;cursor:pointer}
+.week-day-hdr-name{font-size:13px;font-weight:700;color:var(--text)}
+.week-section.week-today .week-day-hdr-name{color:var(--orange)}
+.week-job-count{font-size:11px;font-weight:700;background:var(--orange);color:#fff;border-radius:99px;padding:1px 8px}
+.week-job-row{padding:7px 14px;display:flex;align-items:center;gap:8px;border-top:.5px solid var(--border)}
+.week-job-row.done{opacity:.55}
+.week-job-row.done .week-job-name{text-decoration:line-through}
+.week-job-time{font-size:11px;font-weight:700;color:var(--orange);min-width:52px;flex-shrink:0}
+.week-job-name{font-size:13px;font-weight:600;color:var(--text);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.week-job-type{font-size:11px;color:var(--text2);flex-shrink:0}
+.week-empty{padding:8px 14px;font-size:12px;color:var(--text3);border-top:.5px solid var(--border)}
 .cal-day-jobs{flex:1;overflow-y:auto;padding:10px 16px 16px;-webkit-overflow-scrolling:touch;background:var(--bg2)}
 .cal-day-title{font-size:13px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.04em;margin-bottom:10px;padding-top:2px}
 .job-slot{background:var(--bg);border:1px solid var(--border);border-radius:var(--rl);padding:13px;margin-bottom:8px;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.06);border-left:4px solid var(--orange)}
@@ -356,7 +373,7 @@ textarea.fi{min-height:80px;resize:vertical}
       <button class="ibtn add" onclick="showAdd()">+</button>
     </div>
   </div>
-  <div class="subbar"><span id="hdrsub">Loading...</span><button onclick="doRefresh()">Sync</button></div>
+  <div class="subbar"><span id="hdrsub">Loading...</span></div>
   <div class="srchwrap"><input type="search" id="srch" placeholder="Search name, phone, address..." oninput="renderList()"/></div>
   <div class="fbar">
     <button class="fpill on" onclick="setCat('all',this)">All</button>
@@ -407,12 +424,18 @@ textarea.fi{min-height:80px;resize:vertical}
     <span class="cal-month" id="cal-month-label"></span>
     <button class="cal-nav" onclick="calNext()">›</button>
   </div>
-  <div class="cal-grid-wrap">
+  <div class="cal-view-seg">
+    <button class="cvs-btn on" id="cvs-monthly" onclick="setCalView('monthly')">Monthly</button>
+    <button class="cvs-btn" id="cvs-weekly" onclick="setCalView('weekly')">Weekly</button>
+    <button class="cvs-btn" id="cvs-daily" onclick="setCalView('daily')">Daily</button>
+  </div>
+  <div class="cal-grid-wrap" id="cal-monthly-wrap">
     <div class="cal-dow">
       <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
     </div>
     <div class="cal-days" id="cal-days"></div>
   </div>
+  <div class="cal-week-wrap" id="cal-week-wrap" style="display:none"></div>
   <div class="cal-day-jobs" id="cal-day-jobs">
     <div class="empty" style="padding:30px 0">Select a day to see scheduled jobs</div>
   </div>
@@ -1648,13 +1671,65 @@ async function shareInvoice(){
 /* ══════════════════════════════
    SCHEDULE SYSTEM
 ══════════════════════════════ */
-let schedJobs={}, calYear=new Date().getFullYear(), calMonth=new Date().getMonth(), calSelDate=null, schedPickerTab='crm', schedSelContact=null;
+let schedJobs={}, calYear=new Date().getFullYear(), calMonth=new Date().getMonth(), calSelDate=null, schedPickerTab='crm', schedSelContact=null, calView='monthly';
+
+function getTodayStr(){const t=new Date();return`${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`;}
+function getWeekStart(ds){const d=new Date(ds+'T00:00:00');d.setDate(d.getDate()-d.getDay());return d;}
+function dsFromDate(d){return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
+
+function setCalView(v){
+  calView=v;
+  document.querySelectorAll('.cvs-btn').forEach(b=>b.classList.remove('on'));
+  document.getElementById('cvs-'+v).classList.add('on');
+  const mw=document.getElementById('cal-monthly-wrap');
+  const ww=document.getElementById('cal-week-wrap');
+  const dj=document.getElementById('cal-day-jobs');
+  if(v==='monthly'){mw.style.display='';ww.style.display='none';dj.style.display='';renderCalDays();if(calSelDate)renderDayJobs(calSelDate);}
+  else if(v==='weekly'){mw.style.display='none';ww.style.display='';dj.style.display='none';if(!calSelDate)calSelDate=getTodayStr();renderWeekView();}
+  else{mw.style.display='none';ww.style.display='none';dj.style.display='';if(!calSelDate)calSelDate=getTodayStr();renderDayJobs(calSelDate);updateDailyHeader();}
+}
+
+function updateDailyHeader(){
+  const d=new Date((calSelDate||getTodayStr())+'T00:00:00');
+  document.getElementById('cal-month-label').textContent=d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',year:'numeric'});
+}
+
+function renderWeekView(){
+  const ws=getWeekStart(calSelDate||getTodayStr());
+  const we=new Date(ws);we.setDate(we.getDate()+6);
+  document.getElementById('cal-month-label').textContent=
+    ws.toLocaleDateString('en-US',{month:'short',day:'numeric'})+' – '+we.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+  const today=getTodayStr();
+  let html='';
+  for(let i=0;i<7;i++){
+    const d=new Date(ws);d.setDate(d.getDate()+i);
+    const ds=dsFromDate(d);
+    const dayJs=Object.values(schedJobs).filter(j=>j.date===ds).sort((a,b)=>(a.time||'').localeCompare(b.time||''));
+    const isToday=ds===today;
+    const label=d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
+    html+=`<div class="week-section${isToday?' week-today':''}">
+      <div class="week-day-hdr" onclick="selectDay('${ds}')">
+        <span class="week-day-hdr-name">${label}</span>
+        ${dayJs.length?`<span class="week-job-count">${dayJs.length}</span>`:''}
+      </div>
+      ${dayJs.length?dayJs.map(j=>{
+        const t=j.time?new Date('2000-01-01T'+j.time).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}):'';
+        return`<div class="week-job-row${j.status==='completed'?' done':''}">
+          <span class="week-job-time">${t}</span>
+          <span class="week-job-name">${j.customerName||'Unknown'}</span>
+          ${j.jobType?`<span class="week-job-type">${j.jobType}</span>`:''}
+        </div>`;
+      }).join(''):`<div class="week-empty">No jobs</div>`}
+    </div>`;
+  }
+  document.getElementById('cal-week-wrap').innerHTML=html;
+}
 
 function initSchedJobs(){
   db.ref('schedJobs').on('value',s=>{
     schedJobs=s.val()||{};
-    renderCalDays();
-    if(calSelDate) renderDayJobs(calSelDate);
+    if(calView==='weekly')renderWeekView();
+    else{renderCalDays();if(calSelDate)renderDayJobs(calSelDate);}
   });
 }
 
@@ -1689,8 +1764,10 @@ function renderCalDays(){
 
 function selectDay(ds){
   calSelDate=ds;
-  renderCalDays();
-  renderDayJobs(ds);
+  const d=new Date(ds+'T00:00:00');calYear=d.getFullYear();calMonth=d.getMonth();
+  if(calView==='weekly')renderWeekView();
+  else if(calView==='daily'){renderDayJobs(ds);updateDailyHeader();}
+  else{renderCalDays();renderDayJobs(ds);}
 }
 
 function renderDayJobs(ds){
@@ -1724,8 +1801,16 @@ function renderDayJobs(ds){
     }).join('');
 }
 
-function calPrev(){if(calMonth===0){calMonth=11;calYear--;}else calMonth--;renderCalDays();if(calSelDate)renderDayJobs(calSelDate);}
-function calNext(){if(calMonth===11){calMonth=0;calYear++;}else calMonth++;renderCalDays();if(calSelDate)renderDayJobs(calSelDate);}
+function calPrev(){
+  if(calView==='weekly'){const ws=getWeekStart(calSelDate||getTodayStr());ws.setDate(ws.getDate()-7);calSelDate=dsFromDate(ws);renderWeekView();}
+  else if(calView==='daily'){const d=new Date((calSelDate||getTodayStr())+'T00:00:00');d.setDate(d.getDate()-1);calSelDate=dsFromDate(d);renderDayJobs(calSelDate);updateDailyHeader();}
+  else{if(calMonth===0){calMonth=11;calYear--;}else calMonth--;renderCalDays();if(calSelDate)renderDayJobs(calSelDate);}
+}
+function calNext(){
+  if(calView==='weekly'){const ws=getWeekStart(calSelDate||getTodayStr());ws.setDate(ws.getDate()+7);calSelDate=dsFromDate(ws);renderWeekView();}
+  else if(calView==='daily'){const d=new Date((calSelDate||getTodayStr())+'T00:00:00');d.setDate(d.getDate()+1);calSelDate=dsFromDate(d);renderDayJobs(calSelDate);updateDailyHeader();}
+  else{if(calMonth===11){calMonth=0;calYear++;}else calMonth++;renderCalDays();if(calSelDate)renderDayJobs(calSelDate);}
+}
 
 // ── Schedule Form ──
 function initSchedJobGrid(){
