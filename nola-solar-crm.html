@@ -155,11 +155,16 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFo
 .status-row{display:flex;align-items:center;gap:10px;background:var(--bg);border-radius:var(--rl);padding:11px 14px;margin-bottom:14px;border:1px solid var(--border)}
 .status-row-lbl{font-size:13px;color:var(--text2);font-weight:500}
 .status-chg-btn{margin-left:auto;font-size:12px;padding:5px 13px;border-radius:8px;border:1px solid var(--border2);background:var(--bg2);color:var(--text);cursor:pointer;font-family:inherit;font-weight:600}
-.status-picker{background:var(--bg);border:1px solid var(--border);border-radius:var(--rl);margin-bottom:14px;overflow:hidden;box-shadow:var(--shadow-md)}
-.status-opt{display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;border-bottom:.5px solid var(--border);font-size:14px;font-weight:600;width:100%;background:none;text-align:left;font-family:inherit}
-.status-opt:last-child{border-bottom:none}
+.status-picker{display:flex;gap:6px;margin-bottom:14px;overflow-x:auto;padding:2px 0;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.status-picker::-webkit-scrollbar{display:none}
+.status-opt{flex-shrink:0;padding:6px 12px;border-radius:99px;border:1.5px solid var(--border2);background:var(--bg2);font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;color:var(--text2);white-space:nowrap}
 .status-opt:active{opacity:.7}
-.status-opt.sel{background:var(--bg2)}
+.status-opt.sel{border-color:currentColor}
+.status-opt.sel.new{background:var(--new-bg);color:var(--new-txt);border-color:var(--new-brd)}
+.status-opt.sel.followup{background:var(--followup-bg);color:var(--followup-txt);border-color:var(--followup-brd)}
+.status-opt.sel.pending{background:var(--pending-bg);color:var(--pending-txt);border-color:var(--pending-brd)}
+.status-opt.sel.inprocess{background:var(--inprog-bg);color:var(--inprog-txt);border-color:var(--inprog-brd)}
+.status-opt.sel.completed{background:var(--done-bg);color:var(--done-txt);border-color:var(--done-brd)}
 
 /* PHOTOS */
 .psec{margin-bottom:14px}
@@ -923,7 +928,7 @@ function renderDet(c){
     c.createdAt&&{l:'Added',v:new Date(c.createdAt).toLocaleDateString('en-US')},
   ].filter(Boolean);
   const gal=pks.length?`<div class="pgal">${pks.map(k=>`<div class="pthw"><img class="pth" src="${pm[k]}"/><button class="pdel" onclick="delPhoto('${c.id}','${k}')">×</button></div>`).join('')}</div>`:'';
-  const pickerOpts=STATUSES.map(s=>`<button class="status-opt${s===st?' sel':''}" onclick="updateStatus('${c.id}','${s}')">${STATUS_ICON[s]} ${STATUS_LABEL[s]}</button>`).join('');
+  const pickerOpts=STATUSES.map(s=>`<button class="status-opt ${s}${s===st?' sel':''}" onclick="updateStatus('${c.id}','${s}')">${STATUS_ICON[s]} ${STATUS_LABEL[s]}</button>`).join('');
   const ph=c.phone||'';const addr=c.address||'';
   const mapsUrl=addr?`https://maps.apple.com/?q=${encodeURIComponent(addr)}`:'';
   document.getElementById('dbody').innerHTML=`
@@ -1019,7 +1024,7 @@ async function delContact(id){
   try{await db.ref('contacts/'+id).remove();await db.ref('photos/'+id).remove();delete photos[id];toast('Deleted');showList();}
   catch(e){toast('Error: '+e.message,4000);}
 }
-function toggleStatusPicker(){const p=document.getElementById('status-picker');if(p)p.style.display=p.style.display==='none'?'block':'none';}
+function toggleStatusPicker(){const p=document.getElementById('status-picker');if(p)p.style.display=p.style.display==='none'?'flex':'none';}
 async function updateStatus(id,status){
   try{
     await db.ref('contacts/'+id+'/status').set(status);
