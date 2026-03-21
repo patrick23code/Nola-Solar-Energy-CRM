@@ -131,6 +131,12 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFo
 .dav.residential{background:var(--res-bg);color:var(--res-txt)}
 .dav.commercial{background:var(--com-bg);color:var(--com-txt)}
 .dname{font-size:20px;font-weight:700;color:var(--text)}
+.dquick{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}
+.dqbtn{display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 4px;border-radius:var(--r);border:1px solid var(--border);background:var(--bg);cursor:pointer;font-family:inherit;text-decoration:none;color:var(--text);-webkit-tap-highlight-color:transparent}
+.dqbtn .dqi{font-size:22px}
+.dqbtn .dql{font-size:11px;font-weight:600;color:var(--text2)}
+.dqbtn:active{background:var(--bg2)}
+.dqbtn.off{opacity:.3;pointer-events:none}
 .arow{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
 .abtn{padding:11px;border:.5px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);font-size:13px;font-family:inherit;cursor:pointer;text-align:center;text-decoration:none;display:block;font-weight:500}
 .abtn:active{background:var(--bg2)}
@@ -918,8 +924,16 @@ function renderDet(c){
   ].filter(Boolean);
   const gal=pks.length?`<div class="pgal">${pks.map(k=>`<div class="pthw"><img class="pth" src="${pm[k]}"/><button class="pdel" onclick="delPhoto('${c.id}','${k}')">×</button></div>`).join('')}</div>`:'';
   const pickerOpts=STATUSES.map(s=>`<button class="status-opt${s===st?' sel':''}" onclick="updateStatus('${c.id}','${s}')">${STATUS_ICON[s]} ${STATUS_LABEL[s]}</button>`).join('');
+  const ph=c.phone||'';const addr=c.address||'';
+  const mapsUrl=addr?`https://maps.apple.com/?q=${encodeURIComponent(addr)}`:'';
   document.getElementById('dbody').innerHTML=`
     <div class="dhero"><div class="dav ${c.category}">${av}</div><div><div class="dname">${fullName(c)}</div></div></div>
+    <div class="dquick">
+      <a class="dqbtn${ph?'':' off'}" href="tel:${ph}"><span class="dqi">📞</span><span class="dql">Call</span></a>
+      <a class="dqbtn${ph?'':' off'}" href="sms:${ph}"><span class="dqi">💬</span><span class="dql">Text</span></a>
+      <a class="dqbtn${addr?'':' off'}" href="${mapsUrl}" target="_blank"><span class="dqi">📍</span><span class="dql">Maps</span></a>
+      <button class="dqbtn" onclick="quickNote('${c.id}','${fullName(c).replace(/'/g,"\\'")}')"><span class="dqi">📝</span><span class="dql">Note</span></button>
+    </div>
     <div class="status-row"><span class="status-row-lbl">Status</span><span class="sbadge ${st}">${STATUS_LABEL[st]}</span><button class="status-chg-btn" onclick="toggleStatusPicker()">Change</button></div>
     <div class="status-picker" id="status-picker" style="display:none">${pickerOpts}</div>
     <button class="abtn inv" style="width:100%;margin-bottom:14px" onclick="showInvForm('${c.id}')">🧾 Create Invoice / Receipt</button>
@@ -2012,6 +2026,11 @@ function showNoteForm(id){
 }
 
 function editNote(id){showNoteForm(id);}
+function quickNote(contactId, contactName){
+  showNoteForm(null);
+  const c=contacts[contactId];
+  if(c){noteSelCustomer=c;document.getElementById('note-customer-search').value=contactName;}
+}
 
 function renderNoteCustomerSearch(){
   const s=document.getElementById('note-customer-search').value.toLowerCase();
