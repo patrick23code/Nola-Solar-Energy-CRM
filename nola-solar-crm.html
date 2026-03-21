@@ -369,7 +369,7 @@ textarea.fi{min-height:80px;resize:vertical}
 .week-section{background:var(--bg);border:1px solid var(--border);border-radius:var(--rl);margin-bottom:6px;overflow:hidden}
 .week-section.week-today{border-color:var(--orange);border-left:3px solid var(--orange)}
 .week-day-hdr{padding:9px 12px;display:flex;align-items:center;gap:0;cursor:pointer}
-.week-day-hdr-name{font-size:13px;font-weight:700;color:var(--text);flex:1}
+.week-day-hdr-name{font-size:13px;font-weight:700;color:var(--text);margin-right:6px}
 .week-section.week-today .week-day-hdr-name{color:var(--orange)}
 .week-day-no-jobs{font-size:12px;color:var(--text3);font-weight:500;margin-right:10px}
 .week-job-count{font-size:11px;font-weight:700;background:var(--orange);color:#fff;border-radius:99px;padding:1px 8px}
@@ -1899,6 +1899,7 @@ function renderWeekView(){
           ?`<span class="week-job-count">${dayJs.length}</span>`
           :`<span class="week-day-no-jobs">— No jobs</span>`
         }
+        <span style="flex:1"></span>
         <button class="week-add-btn" onclick="event.stopPropagation();calSelDate='${ds}';showSchedForm()">+</button>
       </div>
       ${dayJs.map(j=>{
