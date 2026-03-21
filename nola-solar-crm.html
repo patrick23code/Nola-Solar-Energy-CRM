@@ -171,9 +171,15 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFo
 .pgal{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
 .pgal::-webkit-scrollbar{display:none}
 .pthw{position:relative;flex-shrink:0}
-.pth{width:110px;height:110px;border-radius:var(--r);object-fit:cover;display:block;border:.5px solid var(--border)}
+.pth{width:100px;height:100px;border-radius:var(--r);object-fit:cover;display:block;border:.5px solid var(--border)}
 .pdel{position:absolute;top:4px;right:4px;width:22px;height:22px;border-radius:50%;background:rgba(0,0,0,.65);color:#fff;border:none;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center}
-.padd{display:block;text-align:center;padding:10px;border:1.5px dashed var(--orange);border-radius:var(--r);font-size:13px;color:var(--orange);cursor:pointer;margin-top:8px;font-weight:500}
+.padd{display:block;text-align:center;padding:8px;border:1.5px dashed var(--border2);border-radius:var(--r);font-size:12px;color:var(--text2);cursor:pointer;font-weight:600;margin-top:6px}
+.photo-sec{background:var(--bg);border-radius:var(--rl);border:1px solid var(--border);padding:12px 14px;margin-bottom:10px}
+.photo-sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.photo-sec-lbl{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;display:flex;align-items:center;gap:5px}
+.photo-sec-lbl.before{color:#1565C0}
+.photo-sec-lbl.after{color:#2E7D32}
+.photo-sec-count{font-size:11px;color:var(--text2);font-weight:500}
 
 /* FORM */
 .fbody{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:14px;-webkit-overflow-scrolling:touch}
@@ -927,7 +933,10 @@ function renderDet(c){
     c.notes&&{l:'Notes',v:c.notes.replace(/\n/g,'<br>')},
     c.createdAt&&{l:'Added',v:new Date(c.createdAt).toLocaleDateString('en-US')},
   ].filter(Boolean);
-  const gal=pks.length?`<div class="pgal">${pks.map(k=>`<div class="pthw"><img class="pth" src="${pm[k]}"/><button class="pdel" onclick="delPhoto('${c.id}','${k}')">×</button></div>`).join('')}</div>`:'';
+  const beforePks=pks.filter(k=>k.startsWith('before_'));
+  const afterPks=pks.filter(k=>k.startsWith('after_'));
+  const otherPks=pks.filter(k=>!k.startsWith('before_')&&!k.startsWith('after_'));
+  const renderGal=(keys)=>keys.length?`<div class="pgal">${keys.map(k=>`<div class="pthw"><img class="pth" src="${pm[k]}"/><button class="pdel" onclick="delPhoto('${c.id}','${k}')">×</button></div>`).join('')}</div>`:'';
   const pickerOpts=STATUSES.map(s=>`<button class="status-opt ${s}${s===st?' sel':''}" onclick="updateStatus('${c.id}','${s}')">${STATUS_ICON[s]} ${STATUS_LABEL[s]}</button>`).join('');
   const ph=c.phone||'';const addr=c.address||'';
   const mapsUrl=addr?`https://maps.apple.com/?q=${encodeURIComponent(addr)}`:'';
@@ -942,7 +951,23 @@ function renderDet(c){
       <button class="dqbtn" onclick="goSchedule('${c.id}')"><span class="dqi">📅</span><span class="dql">Schedule</span></button>
       <button class="dqbtn" onclick="showInvForm('${c.id}')"><span class="dqi">🧾</span><span class="dql">Receipt</span></button>
     </div>
-    <div class="psec">${gal}<label class="padd" onclick="document.getElementById('photo-input').click()">+ Add Photo${pks.length?' ('+pks.length+' photos)':''}</label></div>
+    <div class="psec">
+      <div class="photo-sec">
+        <div class="photo-sec-hdr">
+          <span class="photo-sec-lbl before">📷 Before${beforePks.length?` <span class="photo-sec-count">${beforePks.length}</span>`:''}</span>
+          <label style="font-size:12px;color:var(--orange);font-weight:600;cursor:pointer" onclick="setPhotoTag('before')">+ Add</label>
+        </div>
+        ${renderGal(beforePks)}
+        ${otherPks.length?renderGal(otherPks):''}
+      </div>
+      <div class="photo-sec">
+        <div class="photo-sec-hdr">
+          <span class="photo-sec-lbl after">✅ After${afterPks.length?` <span class="photo-sec-count">${afterPks.length}</span>`:''}</span>
+          <label style="font-size:12px;color:var(--orange);font-weight:600;cursor:pointer" onclick="setPhotoTag('after')">+ Add</label>
+        </div>
+        ${renderGal(afterPks)}
+      </div>
+    </div>
     <div class="icard">${rows.map(r=>`<div class="irow"><div class="ilbl">${r.l}</div><div class="ival">${r.v}</div></div>`).join('')}</div>
     <div class="arow">
       <button class="abtn" onclick="showEdit()">Edit</button>
@@ -1048,6 +1073,8 @@ async function updateStatus(id,status){
 
 /* ── Photos ── */
 let formPhotos={};
+let activePhotoTag='before';
+function setPhotoTag(tag){activePhotoTag=tag;document.getElementById('photo-input').click();}
 function renderFormGallery(){
   const el=document.getElementById('form-gallery');if(!el)return;
   el.innerHTML=Object.keys(formPhotos).map(k=>`<div class="pthw"><img class="pth" src="${formPhotos[k]}"/><button class="pdel" onclick="delFormPhoto('${k}')">×</button></div>`).join('');
@@ -1066,7 +1093,8 @@ function handlePhoto(e){
         if(w>h){if(w>MX){h=Math.round(h*MX/w);w=MX;}}else{if(h>MX){w=Math.round(w*MX/h);h=MX;}}
         cv.width=w;cv.height=h;cv.getContext('2d').drawImage(img,0,0,w,h);
         const b64=cv.toDataURL('image/jpeg',.75);
-        const pk='p_'+Date.now()+'_'+Math.random().toString(36).slice(2,6);
+        const prefix=inForm?'p':activePhotoTag;
+        const pk=prefix+'_'+Date.now()+'_'+Math.random().toString(36).slice(2,6);
         if(inForm){formPhotos[pk]=b64;renderFormGallery();}
         else{
           if(!selId)return;
