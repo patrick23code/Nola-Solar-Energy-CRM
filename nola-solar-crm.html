@@ -188,10 +188,14 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFo
 .pth{width:100px;height:100px;border-radius:var(--r);object-fit:cover;display:block;border:.5px solid var(--border)}
 .pdel{position:absolute;top:4px;right:4px;width:22px;height:22px;border-radius:50%;background:rgba(0,0,0,.65);color:#fff;border:none;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center}
 .pcover{position:absolute;bottom:4px;left:4px;font-size:10px;font-weight:700;background:var(--orange);color:#fff;border-radius:4px;padding:1px 5px;pointer-events:none}
-.photo-prev-wrap{position:fixed;inset:0;background:rgba(0,0,0,.93);z-index:300;display:none;flex-direction:column;align-items:center;justify-content:center}
+.photo-prev-wrap{position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:300;display:none;flex-direction:column;align-items:center;justify-content:center}
 .photo-prev-wrap.show{display:flex}
-.photo-prev-img{max-width:100%;max-height:62vh;object-fit:contain;border-radius:10px}
-.photo-prev-sheet{position:absolute;bottom:0;left:0;right:0;background:var(--bg);border-radius:20px 20px 0 0;padding:0 0 calc(env(safe-area-inset-bottom,0px)+8px)}
+.photo-prev-img{max-width:100%;max-height:85vh;object-fit:contain;border-radius:8px}
+.photo-prev-bar{position:absolute;top:0;left:0;right:0;display:flex;align-items:center;justify-content:space-between;padding:14px 16px;padding-top:calc(env(safe-area-inset-top,0px)+14px)}
+.photo-prev-close{background:rgba(255,255,255,.15);border:none;color:#fff;font-size:20px;width:36px;height:36px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.photo-prev-dots{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);color:#fff;font-size:15px;font-weight:900;letter-spacing:2px;padding:6px 12px;border-radius:8px;cursor:pointer}
+.photo-prev-sheet{position:absolute;bottom:0;left:0;right:0;background:var(--bg);border-radius:20px 20px 0 0;padding:0 0 calc(env(safe-area-inset-bottom,0px)+8px);display:none}
+.photo-prev-sheet.show{display:block}
 .padd{display:block;text-align:center;padding:8px;border:1.5px dashed var(--border2);border-radius:var(--r);font-size:12px;color:var(--text2);cursor:pointer;font-weight:600;margin-top:6px}
 .photo-sec{background:var(--bg);border-radius:var(--rl);border:1px solid var(--border);padding:12px 14px 6px;margin-bottom:10px;overflow:hidden}
 .photo-sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
@@ -2266,11 +2270,18 @@ function openPhotoPreview(cid,pk){
   document.getElementById('photo-cover-lbl').textContent=isCover?'Remove Cover':'Mark as Cover';
   document.getElementById('photo-prev-wrap').classList.add('show');
 }
+function togglePhotoMenu(){document.getElementById('photo-prev-sheet').classList.toggle('show');}
 function closePhotoPreview(e){
-  if(e&&e.target!==document.getElementById('photo-prev-wrap'))return;
-  document.getElementById('photo-prev-wrap').classList.remove('show');
+  const wrap=document.getElementById('photo-prev-wrap');
+  const sheet=document.getElementById('photo-prev-sheet');
+  if(sheet.classList.contains('show')){sheet.classList.remove('show');return;}
+  if(e&&e.target!==wrap)return;
+  wrap.classList.remove('show');
 }
-function closePhotoPreviewForce(){document.getElementById('photo-prev-wrap').classList.remove('show');}
+function closePhotoPreviewForce(){
+  document.getElementById('photo-prev-wrap').classList.remove('show');
+  document.getElementById('photo-prev-sheet').classList.remove('show');
+}
 async function movePhoto(){
   const cid=prevContactId,pk=prevPhotoKey;if(!cid||!pk)return;
   const src=photos[cid]?.[pk];if(!src)return;
@@ -2347,8 +2358,12 @@ async function archiveContact(id){
 
 <!-- Photo preview -->
 <div class="photo-prev-wrap" id="photo-prev-wrap" onclick="closePhotoPreview(event)">
+  <div class="photo-prev-bar">
+    <button class="photo-prev-close" onclick="closePhotoPreviewForce()">✕</button>
+    <button class="photo-prev-dots" onclick="togglePhotoMenu()">···</button>
+  </div>
   <img class="photo-prev-img" id="photo-prev-img" src=""/>
-  <div class="photo-prev-sheet">
+  <div class="photo-prev-sheet" id="photo-prev-sheet">
     <div class="sheet-handle"></div>
     <button class="sheet-item" id="photo-move-btn" onclick="movePhoto()"><span class="si">↕️</span><span id="photo-move-lbl">Move to After</span></button>
     <button class="sheet-item" id="photo-cover-btn" onclick="setCoverPhoto()"><span class="si">⭐</span><span id="photo-cover-lbl">Mark as Cover</span></button>
