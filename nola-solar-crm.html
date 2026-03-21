@@ -352,11 +352,14 @@ textarea.fi{min-height:80px;resize:vertical}
 .cal-day.today{background:var(--orange);color:#fff;font-weight:800}
 .cal-day.selected{background:var(--orange-light);color:var(--orange-d);border:2px solid var(--orange);font-weight:800}
 .cal-day.today.selected{background:var(--orange);color:#fff;border:2px solid var(--orange-d)}
-.cal-day.has-jobs::after{content:'';width:6px;height:6px;border-radius:50%;background:var(--orange);position:absolute;bottom:3px}
-.cal-day.all-done::after{content:'';width:6px;height:6px;border-radius:50%;background:var(--done-txt);position:absolute;bottom:3px}
-.cal-day.today::after,.cal-day.today.has-jobs::after,.cal-day.today.all-done::after{background:rgba(255,255,255,.9)}
-.cal-day.selected.has-jobs::after{background:var(--orange-d)}
-.cal-day.selected.all-done::after{background:var(--done-txt)}
+.cal-dots{display:flex;align-items:center;justify-content:center;gap:2px;position:absolute;bottom:3px;left:0;right:0}
+.cal-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.cal-dot.done{background:var(--done-txt)}
+.cal-dot.pending{background:var(--orange)}
+.cal-dot-more{font-size:7px;font-weight:800;color:var(--text2);line-height:1;margin-left:1px}
+.cal-day.today .cal-dot{background:rgba(255,255,255,.9)}
+.cal-day.today .cal-dot-more{color:rgba(255,255,255,.75)}
+.cal-day.selected.has-jobs .cal-dot.pending{background:var(--orange-d)}
 .cal-view-seg{display:flex;padding:8px 16px 6px;gap:6px;background:var(--bg);border-bottom:1px solid var(--border);flex-shrink:0}
 .cvs-btn{flex:1;padding:7px 4px;border:1.5px solid var(--border2);border-radius:var(--r);background:var(--bg2);font-size:12px;font-weight:600;color:var(--text2);cursor:pointer;font-family:inherit}
 .cvs-btn.on{background:var(--orange);color:#fff;border-color:var(--orange)}
@@ -1917,7 +1920,19 @@ function renderCalDays(){
     const dayData=jobsByDay[ds];
     const hasJobs=!!dayData;
     const allDone=hasJobs&&dayData.total===dayData.done;
-    html+=`<div class="cal-day this-month${isToday?' today':''}${isSel?' selected':''}${hasJobs?(allDone?' all-done':' has-jobs'):''}" onclick="selectDay('${ds}')">${d}</div>`;
+    let dotsHtml='';
+    if(hasJobs){
+      const total=dayData.total,done=dayData.done,pending=total-done;
+      const max=3;
+      let dots='';
+      const dShow=Math.min(done,max);
+      const pShow=Math.min(pending,max-dShow);
+      for(let x=0;x<dShow;x++) dots+=`<div class="cal-dot done"></div>`;
+      for(let x=0;x<pShow;x++) dots+=`<div class="cal-dot pending"></div>`;
+      if(total>max) dots+=`<span class="cal-dot-more">+</span>`;
+      dotsHtml=`<div class="cal-dots">${dots}</div>`;
+    }
+    html+=`<div class="cal-day this-month${isToday?' today':''}${isSel?' selected':''}${hasJobs?(allDone?' all-done':' has-jobs'):''}" onclick="selectDay('${ds}')">${d}${dotsHtml}</div>`;
   }
   document.getElementById('cal-days').innerHTML=html;
 }
