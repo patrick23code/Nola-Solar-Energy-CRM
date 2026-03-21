@@ -394,6 +394,7 @@ textarea.fi{min-height:80px;resize:vertical}
 .job-slot-addr{font-size:12px;color:var(--text3);margin-top:2px}
 .job-slot-actions{display:flex;gap:6px;margin-top:8px}
 .jsa-btn{padding:5px 12px;border-radius:99px;border:1.5px solid var(--border2);background:var(--bg2);font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;color:var(--text)}
+.jsa-btn.primary{border-color:var(--orange);background:var(--orange);color:#fff}
 .jsa-btn.done{border-color:var(--done-brd);background:var(--done-bg);color:var(--done-txt)}
 .jsa-btn.del{border-color:var(--red-txt);background:var(--red-bg);color:var(--red-txt)}
 /* Schedule form */
@@ -554,6 +555,9 @@ textarea.fi{min-height:80px;resize:vertical}
     </div>
     <div class="fg"><label>Address / Location</label><input class="fi" id="sched-addr" type="text" placeholder="Street, city, state"/></div>
     <div class="fg"><label>Notes</label><textarea class="fi" id="sched-notes" placeholder="Special instructions, access codes..."></textarea></div>
+    <div id="sched-delete-wrap" style="display:none;margin-top:8px">
+      <button class="jsa-btn del" style="width:100%;padding:10px;font-size:13px" id="sched-deletebtn">Delete Job</button>
+    </div>
   </div>
 </div>
 
@@ -1972,12 +1976,12 @@ function renderDayJobs(ds){
         ${j.address?`<div class="job-slot-addr">📍 ${j.address}</div>`:''}
         ${j.notes?`<div class="job-slot-addr" style="margin-top:4px;font-style:italic">${j.notes}</div>`:''}
         <div class="job-slot-actions">
+          ${j.contactId?`<button class="jsa-btn primary" onclick="openC('${j.contactId}')">Open</button>`:''}
+          <button class="jsa-btn" onclick="editSchedJob('${j.id}')">Edit</button>
           ${st==='completed'
             ? `<button class="jsa-btn done" onclick="markJobStatus('${j.id}','new')">✔ Completed</button>`
-            : `<button class="jsa-btn" onclick="markJobStatus('${j.id}','completed')">○ Mark Complete</button>`
+            : `<button class="jsa-btn" onclick="markJobStatus('${j.id}','completed')">Mark Complete</button>`
           }
-          <button class="jsa-btn" onclick="editSchedJob('${j.id}')">Edit</button>
-          <button class="jsa-btn del" onclick="deleteSchedJob('${j.id}')">Delete</button>
         </div>
       </div>`;
     }).join('');
@@ -2021,6 +2025,8 @@ function showSchedForm(jobId){
   document.getElementById('sched-date').value=calSelDate||new Date().toISOString().split('T')[0];
   switchSchedPickerTab('crm');
   JOBS.forEach(j=>{const k='sj_'+j.replace(/[\s\/]/g,'_');document.getElementById(k)?.classList.remove('on');document.getElementById('sd_'+k)?.classList.remove('on');});
+  const delWrap=document.getElementById('sched-delete-wrap');
+  const delBtn=document.getElementById('sched-deletebtn');
   if(jobId){
     const job=schedJobs[jobId];
     if(job){
@@ -2031,9 +2037,12 @@ function showSchedForm(jobId){
       document.getElementById('sched-notes').value=job.notes||'';
       if(job.jobType){const k='sj_'+job.jobType.replace(/[\s\/]/g,'_');document.getElementById(k)?.classList.add('on');document.getElementById('sd_'+k)?.classList.add('on');}
       document.getElementById('sched-savebtn').onclick=()=>updateSchedJob(jobId);
+      delWrap.style.display='block';
+      delBtn.onclick=()=>deleteSchedJob(jobId);
     }
   } else {
     document.getElementById('sched-savebtn').onclick=saveSchedJob;
+    delWrap.style.display='none';
   }
   renderSchedContactPicker();
   showV('view-schedform');
@@ -2137,7 +2146,8 @@ async function markJobStatus(id, status){
 }
 
 async function deleteSchedJob(id){
-  try{await db.ref('schedJobs/'+id).remove();toast('Deleted');}
+  if(!confirm('Delete this job?'))return;
+  try{await db.ref('schedJobs/'+id).remove();toast('Deleted');showV('view-schedule');}
   catch(e){toast('Error: '+e.message,4000);}
 }
 /* ══════════════════════════════
