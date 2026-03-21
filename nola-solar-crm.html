@@ -182,13 +182,13 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFo
 
 /* PHOTOS */
 .psec{margin-bottom:14px}
-.pgal{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.pgal{display:flex;flex-wrap:nowrap;gap:8px;overflow-x:auto;padding:4px 0 8px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
 .pgal::-webkit-scrollbar{display:none}
 .pthw{position:relative;flex-shrink:0}
 .pth{width:100px;height:100px;border-radius:var(--r);object-fit:cover;display:block;border:.5px solid var(--border)}
 .pdel{position:absolute;top:4px;right:4px;width:22px;height:22px;border-radius:50%;background:rgba(0,0,0,.65);color:#fff;border:none;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center}
 .padd{display:block;text-align:center;padding:8px;border:1.5px dashed var(--border2);border-radius:var(--r);font-size:12px;color:var(--text2);cursor:pointer;font-weight:600;margin-top:6px}
-.photo-sec{background:var(--bg);border-radius:var(--rl);border:1px solid var(--border);padding:12px 14px;margin-bottom:10px}
+.photo-sec{background:var(--bg);border-radius:var(--rl);border:1px solid var(--border);padding:12px 14px 6px;margin-bottom:10px;overflow:hidden}
 .photo-sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
 .photo-sec-lbl{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;display:flex;align-items:center;gap:5px}
 .photo-sec-lbl.before{color:#1565C0}
