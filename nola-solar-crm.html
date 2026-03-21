@@ -187,6 +187,11 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFo
 .pthw{position:relative;flex-shrink:0;scroll-snap-align:start}
 .pth{width:100px;height:100px;border-radius:var(--r);object-fit:cover;display:block;border:.5px solid var(--border)}
 .pdel{position:absolute;top:4px;right:4px;width:22px;height:22px;border-radius:50%;background:rgba(0,0,0,.65);color:#fff;border:none;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.pcover{position:absolute;bottom:4px;left:4px;font-size:10px;font-weight:700;background:var(--orange);color:#fff;border-radius:4px;padding:1px 5px;pointer-events:none}
+.photo-prev-wrap{position:fixed;inset:0;background:rgba(0,0,0,.93);z-index:300;display:none;flex-direction:column;align-items:center;justify-content:center}
+.photo-prev-wrap.show{display:flex}
+.photo-prev-img{max-width:100%;max-height:62vh;object-fit:contain;border-radius:10px}
+.photo-prev-sheet{position:absolute;bottom:0;left:0;right:0;background:var(--bg);border-radius:20px 20px 0 0;padding:0 0 calc(env(safe-area-inset-bottom,0px)+8px)}
 .padd{display:block;text-align:center;padding:8px;border:1.5px dashed var(--border2);border-radius:var(--r);font-size:12px;color:var(--text2);cursor:pointer;font-weight:600;margin-top:6px}
 .photo-sec{background:var(--bg);border-radius:var(--rl);border:1px solid var(--border);padding:12px 14px 6px;margin-bottom:10px;overflow:hidden}
 .photo-sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
@@ -927,7 +932,7 @@ function renderList(){
   const el=document.getElementById('clist');
   if(!fl.length){el.innerHTML=`<div class="empty">${all.length===0?'No contacts yet.<br><br>Tap + to add.':'No results.'}</div>`;return;}
   el.innerHTML=fl.map(c=>{
-    const pm=photos[c.id]||{};const pk=Object.keys(pm)[0];const ph=pk?pm[pk]:null;
+    const pm=photos[c.id]||{};const pk=c.coverPhotoKey&&pm[c.coverPhotoKey]?c.coverPhotoKey:Object.keys(pm)[0];const ph=pk?pm[pk]:null;
     const av=ph?`<img src="${ph}"/>`:initials(c);
     const tags=(c.jobTypes||[]).map(t=>`<span class="tag">${t}</span>`).join('');
     const sub=c.phone||c.email||c.address||'';
@@ -941,7 +946,7 @@ function openC(id){selId=id;const c=contacts[id];if(!c)return;renderDet(c);showV
 
 function renderDet(c){
   const pm=photos[c.id]||{};const pks=Object.keys(pm);
-  const fp=pks.length?pm[pks[0]]:null;
+  const fp=c.coverPhotoKey&&pm[c.coverPhotoKey]?pm[c.coverPhotoKey]:(pks.length?pm[pks[0]]:null);
   const av=fp?`<img src="${fp}"/>`:initials(c);
   const st=c.status||'new';
   const rows=[
@@ -957,7 +962,7 @@ function renderDet(c){
   const afterPks=pks.filter(k=>k.startsWith('after_'));
   const otherPks=pks.filter(k=>!k.startsWith('before_')&&!k.startsWith('after_'));
   const beforeGalKeys=[...beforePks,...otherPks];
-  const renderGal=(keys)=>keys.length?`<div class="pgal">${keys.map(k=>`<div class="pthw"><img class="pth" src="${pm[k]}"/><button class="pdel" onclick="delPhoto('${c.id}','${k}')">×</button></div>`).join('')}</div>`:'';
+  const renderGal=(keys)=>keys.length?`<div class="pgal">${keys.map(k=>`<div class="pthw" onclick="openPhotoPreview('${c.id}','${k}')"><img class="pth" src="${pm[k]}"/>${c.coverPhotoKey===k?'<span class="pcover">Cover</span>':''}</div>`).join('')}</div>`:'';
   const pickerOpts=STATUSES.map(s=>`<button class="status-opt ${s}${s===st?' sel':''}" onclick="updateStatus('${c.id}','${s}')">${STATUS_ICON[s]} ${STATUS_LABEL[s]}</button>`).join('');
   const ph=c.phone||'';const addr=c.address||'';
   const mapsUrl=addr?`https://maps.apple.com/?q=${encodeURIComponent(addr)}`:'';
@@ -2248,6 +2253,64 @@ async function deleteEmailEntry(id){
   try{await db.ref('email_list/'+id).remove();toast('Deleted');}
   catch(e){toast('Error: '+e.message,4000);}
 }
+/* ── Photo preview ── */
+let prevPhotoKey=null,prevContactId=null;
+function openPhotoPreview(cid,pk){
+  prevPhotoKey=pk;prevContactId=cid;
+  const src=photos[cid]?.[pk];if(!src)return;
+  document.getElementById('photo-prev-img').src=src;
+  const isAfter=pk.startsWith('after_');
+  document.getElementById('photo-move-lbl').textContent=isAfter?'Move to Before':'Move to After';
+  document.getElementById('photo-move-btn').querySelector('.si').textContent=isAfter?'📷':'✅';
+  const isCover=contacts[cid]?.coverPhotoKey===pk;
+  document.getElementById('photo-cover-lbl').textContent=isCover?'Remove Cover':'Mark as Cover';
+  document.getElementById('photo-prev-wrap').classList.add('show');
+}
+function closePhotoPreview(e){
+  if(e&&e.target!==document.getElementById('photo-prev-wrap'))return;
+  document.getElementById('photo-prev-wrap').classList.remove('show');
+}
+function closePhotoPreviewForce(){document.getElementById('photo-prev-wrap').classList.remove('show');}
+async function movePhoto(){
+  const cid=prevContactId,pk=prevPhotoKey;if(!cid||!pk)return;
+  const src=photos[cid]?.[pk];if(!src)return;
+  const isAfter=pk.startsWith('after_');
+  const newPk=(isAfter?'before':'after')+'_'+Date.now()+'_'+Math.random().toString(36).slice(2,6);
+  closePhotoPreviewForce();
+  try{
+    await db.ref('photos/'+cid+'/'+newPk).set(src);
+    await db.ref('photos/'+cid+'/'+pk).remove();
+    if(photos[cid]){photos[cid][newPk]=src;delete photos[cid][pk];}
+    if(contacts[cid]?.coverPhotoKey===pk){await db.ref('contacts/'+cid+'/coverPhotoKey').set(newPk);if(contacts[cid])contacts[cid].coverPhotoKey=newPk;}
+    const c=contacts[cid];if(c)renderDet(c);
+    toast('Moved to '+(isAfter?'Before':'After'));
+  }catch(e){toast('Error: '+e.message,4000);}
+}
+async function setCoverPhoto(){
+  const cid=prevContactId,pk=prevPhotoKey;if(!cid||!pk)return;
+  const isCover=contacts[cid]?.coverPhotoKey===pk;
+  const val=isCover?null:pk;
+  closePhotoPreviewForce();
+  try{
+    await db.ref('contacts/'+cid+'/coverPhotoKey').set(val);
+    if(contacts[cid])contacts[cid].coverPhotoKey=val;
+    const c=contacts[cid];if(c){renderDet(c);renderList();}
+    toast(isCover?'Cover removed':'Set as cover photo');
+  }catch(e){toast('Error: '+e.message,4000);}
+}
+async function deletePreviewPhoto(){
+  const cid=prevContactId,pk=prevPhotoKey;if(!cid||!pk)return;
+  if(!confirm('Delete this photo?'))return;
+  closePhotoPreviewForce();
+  try{
+    await db.ref('photos/'+cid+'/'+pk).remove();
+    if(photos[cid])delete photos[cid][pk];
+    if(contacts[cid]?.coverPhotoKey===pk){await db.ref('contacts/'+cid+'/coverPhotoKey').set(null);if(contacts[cid])contacts[cid].coverPhotoKey=null;}
+    const c=contacts[cid];if(c){renderDet(c);renderList();}
+    toast('Deleted');
+  }catch(e){toast('Error: '+e.message,4000);}
+}
+
 /* ── Detail menu sheet ── */
 function openDetailMenu(){
   const archived=contacts[selId]?.archived;
@@ -2280,6 +2343,18 @@ async function archiveContact(id){
   <button class="sheet-item" id="archive-sheet-btn" onclick="archiveContact(selId)"><span class="si">📦</span><span id="archive-sheet-lbl">Archive</span></button>
   <div class="sheet-sep"></div>
   <button class="sheet-item danger" onclick="closeDetailMenu();delContact(selId)"><span class="si">🗑️</span>Delete</button>
+</div>
+
+<!-- Photo preview -->
+<div class="photo-prev-wrap" id="photo-prev-wrap" onclick="closePhotoPreview(event)">
+  <img class="photo-prev-img" id="photo-prev-img" src=""/>
+  <div class="photo-prev-sheet">
+    <div class="sheet-handle"></div>
+    <button class="sheet-item" id="photo-move-btn" onclick="movePhoto()"><span class="si">↕️</span><span id="photo-move-lbl">Move to After</span></button>
+    <button class="sheet-item" id="photo-cover-btn" onclick="setCoverPhoto()"><span class="si">⭐</span><span id="photo-cover-lbl">Mark as Cover</span></button>
+    <div class="sheet-sep"></div>
+    <button class="sheet-item danger" onclick="deletePreviewPhoto()"><span class="si">🗑️</span>Delete</button>
+  </div>
 </div>
 </body>
 </html>
