@@ -343,6 +343,7 @@ textarea.fi{min-height:80px;resize:vertical}
 .cal-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px 8px;background:var(--bg);border-bottom:1px solid var(--border)}
 .cal-month{font-size:17px;font-weight:700;color:var(--text)}
 .cal-nav{width:34px;height:34px;border:1.5px solid var(--border2);border-radius:var(--r);background:var(--bg2);color:var(--text);font-size:18px;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.cal-today-btn{height:28px;padding:0 10px;border:1.5px solid var(--orange);border-radius:var(--r);background:transparent;color:var(--orange);font-size:12px;font-weight:700;cursor:pointer;letter-spacing:.02em}
 .cal-grid-wrap{padding:8px 16px;background:var(--bg);border-bottom:1px solid var(--border);flex-shrink:0}
 .cal-dow{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:4px}
 .cal-dow span{text-align:center;font-size:10px;font-weight:700;color:var(--text2);padding:4px 0}
@@ -492,6 +493,7 @@ textarea.fi{min-height:80px;resize:vertical}
   <div class="cal-header">
     <button class="cal-nav" onclick="calPrev()">‹</button>
     <span class="cal-month" id="cal-month-label"></span>
+    <button class="cal-today-btn" onclick="goToday()">Today</button>
     <button class="cal-nav" onclick="calNext()">›</button>
   </div>
   <div class="cal-view-seg">
@@ -1976,6 +1978,14 @@ function renderDayJobs(ds){
     }).join('');
 }
 
+function goToday(){
+  const t=new Date();
+  calYear=t.getFullYear();calMonth=t.getMonth();
+  calSelDate=getTodayStr();
+  if(calView==='weekly'){renderWeekView();}
+  else if(calView==='daily'){renderDayJobs(calSelDate);updateDailyHeader();}
+  else{renderCalDays();renderDayJobs(calSelDate);}
+}
 function calPrev(){
   if(calView==='weekly'){const ws=getWeekStart(calSelDate||getTodayStr());ws.setDate(ws.getDate()-7);calSelDate=dsFromDate(ws);renderWeekView();}
   else if(calView==='daily'){const d=new Date((calSelDate||getTodayStr())+'T00:00:00');d.setDate(d.getDate()-1);calSelDate=dsFromDate(d);renderDayJobs(calSelDate);updateDailyHeader();}
