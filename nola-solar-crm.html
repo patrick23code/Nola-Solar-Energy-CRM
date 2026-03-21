@@ -974,7 +974,9 @@ function renderDet(c){
       <button class="dqbtn" onclick="goSchedule('${c.id}')"><span class="dqi">📅</span><span class="dql">Schedule</span></button>
       <button class="dqbtn" onclick="showInvForm('${c.id}')"><span class="dqi">🧾</span><span class="dql">Receipt</span></button>
     </div>
-    <div class="psec">
+    <div class="icard">${rows.map(r=>`<div class="irow"><div class="ilbl">${r.l}</div><div class="ival">${r.v}</div></div>`).join('')}</div>
+    ${c.updatedAt?`<div class="dmeta">Last updated: ${new Date(c.updatedAt).toLocaleString('en-US')}</div>`:''}
+    <div class="psec" style="margin-top:14px">
       <div class="photo-sec">
         <div class="photo-sec-hdr">
           <span class="photo-sec-lbl before">📷 Before${beforePks.length?` <span class="photo-sec-count">${beforePks.length}</span>`:''}</span>
@@ -990,9 +992,7 @@ function renderDet(c){
         </div>
         ${renderGal(afterPks)}
       </div>
-    </div>
-    <div class="icard">${rows.map(r=>`<div class="irow"><div class="ilbl">${r.l}</div><div class="ival">${r.v}</div></div>`).join('')}</div>
-    ${c.updatedAt?`<div class="dmeta">Last updated: ${new Date(c.updatedAt).toLocaleString('en-US')}</div>`:''}`;
+    </div>`;
 }
 
 function goSchedule(contactId){
