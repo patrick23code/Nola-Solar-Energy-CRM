@@ -194,6 +194,10 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFo
 .photo-prev-bar{position:absolute;top:0;left:0;right:0;display:flex;align-items:center;justify-content:space-between;padding:14px 16px;padding-top:calc(env(safe-area-inset-top,0px)+14px)}
 .photo-prev-close{background:rgba(255,255,255,.15);border:none;color:#fff;font-size:20px;width:36px;height:36px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center}
 .photo-prev-dots{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);color:#fff;font-size:15px;font-weight:900;letter-spacing:2px;padding:6px 12px;border-radius:8px;cursor:pointer}
+.photo-prev-nav{position:absolute;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.15);border:none;color:#fff;font-size:32px;width:44px;height:44px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1}
+.photo-prev-nav.left{left:12px}
+.photo-prev-nav.right{right:12px}
+.photo-prev-nav:disabled{opacity:.2}
 .photo-prev-sheet{position:absolute;bottom:0;left:0;right:0;background:var(--bg);border-radius:20px 20px 0 0;padding:0 0 calc(env(safe-area-inset-bottom,0px)+8px);display:none}
 .photo-prev-sheet.show{display:block}
 .padd{display:block;text-align:center;padding:8px;border:1.5px dashed var(--border2);border-radius:var(--r);font-size:12px;color:var(--text2);cursor:pointer;font-weight:600;margin-top:6px}
@@ -2258,17 +2262,36 @@ async function deleteEmailEntry(id){
   catch(e){toast('Error: '+e.message,4000);}
 }
 /* ── Photo preview ── */
-let prevPhotoKey=null,prevContactId=null;
+let prevPhotoKey=null,prevContactId=null,prevPhotoKeys=[],prevPhotoIndex=0,touchStartX=0;
 function openPhotoPreview(cid,pk){
-  prevPhotoKey=pk;prevContactId=cid;
-  const src=photos[cid]?.[pk];if(!src)return;
+  prevContactId=cid;
+  const pm=photos[cid]||{};
+  prevPhotoKeys=Object.keys(pm);
+  prevPhotoIndex=prevPhotoKeys.indexOf(pk);
+  if(prevPhotoIndex<0)prevPhotoIndex=0;
+  showPhotoAt(prevPhotoIndex);
+  document.getElementById('photo-prev-wrap').classList.add('show');
+}
+function showPhotoAt(idx){
+  if(idx<0||idx>=prevPhotoKeys.length)return;
+  prevPhotoIndex=idx;
+  prevPhotoKey=prevPhotoKeys[idx];
+  const cid=prevContactId;
+  const src=photos[cid]?.[prevPhotoKey];if(!src)return;
   document.getElementById('photo-prev-img').src=src;
+  document.getElementById('photo-prev-counter').textContent=prevPhotoKeys.length>1?(idx+1)+' / '+prevPhotoKeys.length:'';
+  document.getElementById('photo-prev-left').disabled=idx===0;
+  document.getElementById('photo-prev-right').disabled=idx===prevPhotoKeys.length-1;
+  updatePhotoMenuLabels();
+}
+function navPhoto(dir){showPhotoAt(prevPhotoIndex+dir);}
+function updatePhotoMenuLabels(){
+  const pk=prevPhotoKey,cid=prevContactId;
   const isAfter=pk.startsWith('after_');
   document.getElementById('photo-move-lbl').textContent=isAfter?'Move to Before':'Move to After';
   document.getElementById('photo-move-btn').querySelector('.si').textContent=isAfter?'📷':'✅';
   const isCover=contacts[cid]?.coverPhotoKey===pk;
   document.getElementById('photo-cover-lbl').textContent=isCover?'Remove Cover':'Mark as Cover';
-  document.getElementById('photo-prev-wrap').classList.add('show');
 }
 function togglePhotoMenu(){document.getElementById('photo-prev-sheet').classList.toggle('show');}
 function closePhotoPreview(e){
@@ -2282,6 +2305,14 @@ function closePhotoPreviewForce(){
   document.getElementById('photo-prev-wrap').classList.remove('show');
   document.getElementById('photo-prev-sheet').classList.remove('show');
 }
+window.addEventListener('DOMContentLoaded',()=>{
+  const wrap=document.getElementById('photo-prev-wrap');
+  wrap.addEventListener('touchstart',e=>{touchStartX=e.touches[0].clientX;},{passive:true});
+  wrap.addEventListener('touchend',e=>{
+    const diff=touchStartX-e.changedTouches[0].clientX;
+    if(Math.abs(diff)>50){navPhoto(diff>0?1:-1);}
+  },{passive:true});
+});
 async function movePhoto(){
   const cid=prevContactId,pk=prevPhotoKey;if(!cid||!pk)return;
   const src=photos[cid]?.[pk];if(!src)return;
@@ -2301,10 +2332,11 @@ async function setCoverPhoto(){
   const cid=prevContactId,pk=prevPhotoKey;if(!cid||!pk)return;
   const isCover=contacts[cid]?.coverPhotoKey===pk;
   const val=isCover?null:pk;
-  closePhotoPreviewForce();
+  document.getElementById('photo-prev-sheet').classList.remove('show');
   try{
     await db.ref('contacts/'+cid+'/coverPhotoKey').set(val);
     if(contacts[cid])contacts[cid].coverPhotoKey=val;
+    updatePhotoMenuLabels();
     const c=contacts[cid];if(c){renderDet(c);renderList();}
     toast(isCover?'Cover removed':'Set as cover photo');
   }catch(e){toast('Error: '+e.message,4000);}
@@ -2312,11 +2344,14 @@ async function setCoverPhoto(){
 async function deletePreviewPhoto(){
   const cid=prevContactId,pk=prevPhotoKey;if(!cid||!pk)return;
   if(!confirm('Delete this photo?'))return;
-  closePhotoPreviewForce();
   try{
     await db.ref('photos/'+cid+'/'+pk).remove();
     if(photos[cid])delete photos[cid][pk];
     if(contacts[cid]?.coverPhotoKey===pk){await db.ref('contacts/'+cid+'/coverPhotoKey').set(null);if(contacts[cid])contacts[cid].coverPhotoKey=null;}
+    prevPhotoKeys=prevPhotoKeys.filter(k=>k!==pk);
+    if(!prevPhotoKeys.length){closePhotoPreviewForce();}
+    else{showPhotoAt(Math.min(prevPhotoIndex,prevPhotoKeys.length-1));}
+    document.getElementById('photo-prev-sheet').classList.remove('show');
     const c=contacts[cid];if(c){renderDet(c);renderList();}
     toast('Deleted');
   }catch(e){toast('Error: '+e.message,4000);}
@@ -2359,10 +2394,13 @@ async function archiveContact(id){
 <!-- Photo preview -->
 <div class="photo-prev-wrap" id="photo-prev-wrap" onclick="closePhotoPreview(event)">
   <div class="photo-prev-bar">
-    <button class="photo-prev-close" onclick="closePhotoPreviewForce()">✕</button>
-    <button class="photo-prev-dots" onclick="togglePhotoMenu()">···</button>
+    <button class="photo-prev-close" onclick="closePhotoPreviewForce();event.stopPropagation()">✕</button>
+    <span id="photo-prev-counter" style="color:rgba(255,255,255,.7);font-size:13px;font-weight:600"></span>
+    <button class="photo-prev-dots" onclick="event.stopPropagation();togglePhotoMenu()">···</button>
   </div>
+  <button class="photo-prev-nav left" id="photo-prev-left" onclick="event.stopPropagation();navPhoto(-1)">‹</button>
   <img class="photo-prev-img" id="photo-prev-img" src=""/>
+  <button class="photo-prev-nav right" id="photo-prev-right" onclick="event.stopPropagation();navPhoto(1)">›</button>
   <div class="photo-prev-sheet" id="photo-prev-sheet">
     <div class="sheet-handle"></div>
     <button class="sheet-item" id="photo-move-btn" onclick="movePhoto()"><span class="si">↕️</span><span id="photo-move-lbl">Move to After</span></button>
