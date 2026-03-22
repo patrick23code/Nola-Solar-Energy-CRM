@@ -807,6 +807,7 @@ textarea.fi{min-height:80px;resize:vertical}
   </div>
   <div class="inv-preview-body" id="inv-preview-body"></div>
   <div class="inv-action-bar">
+    <button class="inv-status-toggle" id="inv-status-toggle" onclick="toggleInvStatus()" style="flex:0 0 auto;padding:13px 14px;border-radius:var(--r);font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;border:1.5px solid var(--border2);background:var(--bg2);color:var(--text2);white-space:nowrap">Status: ON</button>
     <button class="inv-print-btn" style="flex:1" onclick="shareInvoice()">Save PDF</button>
   </div>
 </div>
@@ -1457,6 +1458,13 @@ async function warmInvoiceLogo(){
 }
 warmInvoiceLogo();
 
+let invShowStatus=true;
+function toggleInvStatus(){
+  invShowStatus=!invShowStatus;
+  const btn=document.getElementById('inv-status-toggle');
+  if(btn){btn.textContent=invShowStatus?'Status: ON':'Status: OFF';btn.style.color=invShowStatus?'var(--text2)':'var(--orange)';btn.style.borderColor=invShowStatus?'var(--border2)':'var(--orange)';}
+  if(currentInvData) document.getElementById('inv-preview-body').innerHTML=buildInvHTML(currentInvData);
+}
 function buildInvHTML(inv, logoSrc){
   const src=logoSrc||LOGO_B64||cachedInvoiceLogoSrc||DEFAULT_LOGO_PATH;
   const kind=getInvoiceKind(inv);
@@ -1494,7 +1502,7 @@ function buildInvHTML(inv, logoSrc){
         <div class="inv-dates">
           <div class="inv-date-row"><span class="inv-date-lbl">${receiptMode?'Date':'Issue Date'}:</span><span class="inv-date-val">${issueDate}</span></div>
           ${!receiptMode&&validUntil?`<div class="inv-date-row"><span class="inv-date-lbl">Valid Until:</span><span class="inv-date-val">${validUntil}</span></div>`:''}
-          ${!receiptMode?`<div class="inv-date-row"><span class="inv-date-lbl">Status:</span><span class="inv-date-val">${getInvoiceStatusLabel(inv.status)}</span></div>`:''}
+          ${!receiptMode&&invShowStatus?`<div class="inv-date-row"><span class="inv-date-lbl">Status:</span><span class="inv-date-val">${getInvoiceStatusLabel(inv.status)}</span></div>`:''}
         </div>
       </div>
     </div>
@@ -1589,6 +1597,7 @@ function saveInvoice(){
   document.querySelector('#view-invpreview .shdr .bbtn').onclick=()=>showV('view-invform');
   const saveBtn=document.querySelector('#view-invpreview .shdr .bbtn+span+button');
   if(saveBtn){saveBtn.textContent='Save';saveBtn.onclick=saveInvoiceFinal;saveBtn.style.background='';saveBtn.style.color='';saveBtn.style.border='';}
+  resetInvStatusToggle();
   showV('view-invpreview');
   syncPdfActionButton();
 }
@@ -1696,6 +1705,7 @@ function previewSavedInv(id){
   actionBtn.textContent='Edit';
   actionBtn.onclick=()=>editInvoice(id);
   actionBtn.style.background='';actionBtn.style.color='';actionBtn.style.border='';
+  resetInvStatusToggle();
   showV('view-invpreview');
   syncPdfActionButton();
 }
@@ -1813,6 +1823,11 @@ function getPdfActionLabel(){
   return isSafari?'Open PDF':'Save PDF';
 }
 
+function resetInvStatusToggle(){
+  invShowStatus=true;
+  const btn=document.getElementById('inv-status-toggle');
+  if(btn){btn.textContent='Status: ON';btn.style.color='var(--text2)';btn.style.borderColor='var(--border2)';}
+}
 function syncPdfActionButton(){
   const btn=document.querySelector('.inv-print-btn');
   if(btn&&!btn.disabled)btn.textContent=getPdfActionLabel();
