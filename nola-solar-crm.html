@@ -335,6 +335,11 @@ textarea.fi{min-height:80px;resize:vertical}
 .inv-totals-line{display:flex;justify-content:space-between;gap:24px;padding:4px 0;font-size:13px;color:#555;border-bottom:1px solid #f0f0f0}
 .inv-totals-line:last-child{border-bottom:none;border-top:1px solid #ddd;margin-top:4px;padding-top:8px;font-size:15px;font-weight:800}
 .inv-totals-line:last-child .inv-tval{color:#F5A623;font-size:17px;font-weight:900}
+.inv-payment-box{margin:0 32px 16px;border:1.5px solid #d6e8f7;border-radius:8px;background:#f0f7ff;padding:10px 14px;display:flex;align-items:flex-start;gap:10px}
+.inv-payment-box-icon{font-size:18px;line-height:1;flex-shrink:0;margin-top:1px}
+.inv-payment-box-body{}
+.inv-payment-box-lbl{font-size:9px;font-weight:800;color:#2563eb;text-transform:uppercase;letter-spacing:.07em;margin-bottom:3px}
+.inv-payment-box-val{font-size:11px;color:#1e3a5f;font-weight:500;line-height:1.5}
 .inv-footer{padding:14px 32px;border-top:1px solid #eee;display:flex;justify-content:flex-end}
 .inv-footer-terms{text-align:right}
 .inv-footer-terms .inv-tc-lbl{font-size:9px;font-weight:800;color:#6b9fd4;text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:2px}
@@ -731,13 +736,17 @@ textarea.fi{min-height:80px;resize:vertical}
     </div>
     <div class="fg">
       <div class="inv-section-title">Tax</div>
-      <div style="display:flex;align-items:center;gap:10px">
-        <div style="display:flex;align-items:center;gap:8px;flex:1;background:var(--bg2);border:.5px solid var(--border2);border-radius:var(--r);padding:10px 13px">
-          <input type="checkbox" id="inv-tax-on" style="width:18px;height:18px;accent-color:var(--orange);cursor:pointer" onchange="calcTotal()"/>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:120px;background:var(--bg2);border:.5px solid var(--border2);border-radius:var(--r);padding:10px 13px">
+          <input type="checkbox" id="inv-tax-on" style="width:18px;height:18px;accent-color:var(--orange);cursor:pointer" onchange="syncTaxFields()"/>
           <label for="inv-tax-on" style="font-size:14px;color:var(--text);cursor:pointer">Apply Tax</label>
         </div>
-        <div style="display:flex;align-items:center;gap:6px;background:var(--bg2);border:.5px solid var(--border2);border-radius:var(--r);padding:10px 13px;width:110px">
-          <input type="number" id="inv-tax-rate" value="10" min="0" max="100" step="0.1" style="width:50px;border:none;background:transparent;font-size:15px;font-family:inherit;color:var(--text);outline:none" onchange="calcTotal()" oninput="calcTotal()"/>
+        <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:140px;background:var(--bg2);border:.5px solid var(--border2);border-radius:var(--r);padding:10px 13px">
+          <input type="checkbox" id="inv-tax-exempt" style="width:18px;height:18px;accent-color:var(--orange);cursor:pointer" onchange="syncTaxFields()"/>
+          <label for="inv-tax-exempt" style="font-size:14px;color:var(--text);cursor:pointer">Tax Exempt</label>
+        </div>
+        <div id="inv-tax-rate-wrap" style="display:flex;align-items:center;gap:6px;background:var(--bg2);border:.5px solid var(--border2);border-radius:var(--r);padding:10px 13px;width:110px">
+          <input type="number" id="inv-tax-rate" value="9.45" min="0" max="100" step="0.01" style="width:55px;border:none;background:transparent;font-size:15px;font-family:inherit;color:var(--text);outline:none" onchange="calcTotal()" oninput="calcTotal()"/>
           <span style="font-size:15px;color:var(--text2)">%</span>
         </div>
       </div>
@@ -1283,7 +1292,10 @@ function showInvForm(contactId){
   document.getElementById('inv-scope').value='';
   document.getElementById('inv-notes').value='Accepted payment methods: check, cash, or bank transfer.';
   document.getElementById('inv-tax-on').checked=false;
-  document.getElementById('inv-tax-rate').value='10';
+  document.getElementById('inv-tax-exempt').checked=false;
+  document.getElementById('inv-tax-on').disabled=false;
+  document.getElementById('inv-tax-rate-wrap').style.opacity='1';
+  document.getElementById('inv-tax-rate').value='9.45';
   document.getElementById('contact-search').value='';
   document.getElementById('inv-client-name').value='';
   document.getElementById('inv-client-addr').value='';
@@ -1417,20 +1429,29 @@ function updateLineTotal(i){
   const price=parseFloat(lineItems[i].price)||0;
   el.textContent='$'+(qty*price).toFixed(2);
 }
+function syncTaxFields(){
+  const taxExempt=document.getElementById('inv-tax-exempt')?.checked;
+  const taxOn=document.getElementById('inv-tax-on');
+  const rateWrap=document.getElementById('inv-tax-rate-wrap');
+  if(taxExempt){if(taxOn)taxOn.checked=false;if(taxOn)taxOn.disabled=true;if(rateWrap)rateWrap.style.opacity='.4';}
+  else{if(taxOn)taxOn.disabled=false;if(rateWrap)rateWrap.style.opacity='1';}
+  calcTotal();
+}
 function calcTotal(){
   const subtotal=lineItems.reduce((s,item)=>s+((parseFloat(item.qty)||1)*(parseFloat(item.price)||0)),0);
-  const taxOn=document.getElementById('inv-tax-on')?.checked;
+  const taxExempt=document.getElementById('inv-tax-exempt')?.checked;
+  const taxOn=!taxExempt&&(document.getElementById('inv-tax-on')?.checked);
   const taxRate=parseFloat(document.getElementById('inv-tax-rate')?.value)||0;
   const taxAmt=taxOn?(subtotal*taxRate/100):0;
   const total=subtotal+taxAmt;
   document.getElementById('inv-subtotal-display').textContent='$'+subtotal.toFixed(2);
   document.getElementById('inv-total-display').textContent='$'+total.toFixed(2);
   const taxRow=document.getElementById('inv-tax-row');
-  if(taxRow)taxRow.style.display=taxOn?'flex':'none';
+  if(taxRow){taxRow.style.display=(taxOn||taxExempt)?'flex':'none';}
   const taxLabel=document.getElementById('inv-tax-label');
-  if(taxLabel)taxLabel.textContent='Tax ('+taxRate+'%)';
+  if(taxLabel)taxLabel.textContent=taxExempt?'Tax Exempt — Solar Equipment':'Tax ('+taxRate+'%)';
   const taxDisp=document.getElementById('inv-tax-display');
-  if(taxDisp)taxDisp.textContent='$'+taxAmt.toFixed(2);
+  if(taxDisp)taxDisp.textContent=taxExempt?'$0.00':'$'+taxAmt.toFixed(2);
 }
 
 function getInvClientInfo(){
@@ -1536,12 +1557,14 @@ function buildInvHTML(inv, logoSrc){
     </div>
     <div class="inv-bottom">
       <div class="inv-notes">
-        <div class="inv-notes-lbl">Notes</div>
-        <div class="inv-notes-text">${notesText}</div>
+        ${notesText?`<div class="inv-payment-box"><span class="inv-payment-box-icon">💳</span><div class="inv-payment-box-body"><div class="inv-payment-box-lbl">Notes</div><div class="inv-payment-box-val">${notesText}</div></div></div>`:''}
       </div>
       <div class="inv-totals-block">
         <div class="inv-totals-line"><span>Subtotal</span><span class="inv-tval">$${subtotal.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}</span></div>
-        ${inv.taxOn?`<div class="inv-totals-line"><span>Tax (${taxRate}%)</span><span class="inv-tval">$${taxAmt.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}</span></div>`:''}
+        ${inv.taxExempt
+          ?`<div class="inv-totals-line"><span>Tax Exempt — Solar Equipment</span><span class="inv-tval">$0.00</span></div>`
+          :inv.taxOn?`<div class="inv-totals-line"><span>Tax (${taxRate}%)</span><span class="inv-tval">$${taxAmt.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}</span></div>`:''
+        }
         <div class="inv-totals-line"><span>Total</span><span class="inv-tval">$${total.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}</span></div>
       </div>
     </div>
@@ -1573,8 +1596,9 @@ function saveInvoice(){
     amount:((parseFloat(i.qty)||1)*(parseFloat(i.price)||0))
   }));
   if(!items.length){toast('Add at least one line item');return;}
-  const taxOn=document.getElementById('inv-tax-on')?.checked||false;
-  const taxRate=parseFloat(document.getElementById('inv-tax-rate')?.value)||10;
+  const taxExempt=document.getElementById('inv-tax-exempt')?.checked||false;
+  const taxOn=!taxExempt&&(document.getElementById('inv-tax-on')?.checked||false);
+  const taxRate=parseFloat(document.getElementById('inv-tax-rate')?.value)||9.45;
   const subtotal=items.reduce((s,i)=>s+(parseFloat(i.amount)||0),0);
   const taxAmt=taxOn?(subtotal*taxRate/100):0;
   const now=new Date().toISOString();
@@ -1590,7 +1614,7 @@ function saveInvoice(){
     lineItems:items,
     payment,
     status,
-    taxOn,taxRate,taxAmt,subtotal,total:subtotal+taxAmt,
+    taxOn,taxExempt,taxRate,taxAmt,subtotal,total:subtotal+taxAmt,
     createdAt:currentInvData?.createdAt||now,
     updatedAt:now
   };
@@ -1621,8 +1645,9 @@ async function saveInvoiceDraft(){
     desc:i.desc||'',qty:parseFloat(i.qty)||1,price:parseFloat(i.price)||0,
     amount:((parseFloat(i.qty)||1)*(parseFloat(i.price)||0))
   }));
-  const taxOn=document.getElementById('inv-tax-on')?.checked||false;
-  const taxRate=parseFloat(document.getElementById('inv-tax-rate')?.value)||10;
+  const taxExempt=document.getElementById('inv-tax-exempt')?.checked||false;
+  const taxOn=!taxExempt&&(document.getElementById('inv-tax-on')?.checked||false);
+  const taxRate=parseFloat(document.getElementById('inv-tax-rate')?.value)||9.45;
   const subtotal=items.reduce((s,i)=>s+(parseFloat(i.amount)||0),0);
   const taxAmt=taxOn?(subtotal*taxRate/100):0;
   const now=new Date().toISOString();
@@ -1640,7 +1665,7 @@ async function saveInvoiceDraft(){
     lineItems:items,
     payment:invoiceMode?'':document.getElementById('inv-payment-method').value,
     status:'draft',
-    taxOn,taxRate,taxAmt,subtotal,total:subtotal+taxAmt,
+    taxOn,taxExempt,taxRate,taxAmt,subtotal,total:subtotal+taxAmt,
     createdAt:now,updatedAt:now
   };
   try{
@@ -1732,8 +1757,10 @@ function editInvoice(id){
   document.getElementById('inv-notes').value=inv.notes||'';
   document.getElementById('inv-payment-terms').value=inv.paymentTerms||'';
   document.getElementById('inv-payment-method').value=inv.payment||'Check';
+  document.getElementById('inv-tax-exempt').checked=inv.taxExempt||false;
   document.getElementById('inv-tax-on').checked=inv.taxOn||false;
-  document.getElementById('inv-tax-rate').value=inv.taxRate||10;
+  document.getElementById('inv-tax-rate').value=inv.taxRate||9.45;
+  syncTaxFields();
   // Payment term pills
   document.querySelectorAll('#invoice-only-meta .fpill').forEach(b=>{
     b.classList.toggle('on',b.getAttribute('onclick')?.includes(inv.paymentTerms||'__none__'));
