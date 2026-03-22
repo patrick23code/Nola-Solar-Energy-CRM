@@ -246,6 +246,24 @@ textarea.fi{min-height:80px;resize:vertical}
 .js-check{width:20px;height:20px;border-radius:5px;border:1.5px solid currentColor;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:12px}
 
 /* ── INVOICE LIST ── */
+.inv-summary-row{display:flex;gap:10px;padding:12px 14px 4px}
+.inv-summary-card{flex:1;border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:2px}
+.inv-summary-card.pending{background:#fff8f0;border:1.5px solid #f5a623}
+.inv-summary-card.collected{background:#f0fdf4;border:1.5px solid #16a34a}
+.inv-summary-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+.inv-summary-card.pending .inv-summary-lbl{color:#e8941a}
+.inv-summary-card.collected .inv-summary-lbl{color:#16a34a}
+.inv-summary-amt{font-size:20px;font-weight:800}
+.inv-summary-card.pending .inv-summary-amt{color:#e8941a}
+.inv-summary-card.collected .inv-summary-amt{color:#16a34a}
+.inv-summary-sub{font-size:11px;color:var(--text2)}
+.inv-tabs{display:flex;border-bottom:1.5px solid var(--border);background:var(--bg);flex-shrink:0}
+.inv-tab{flex:1;padding:10px 4px;font-size:13px;font-weight:600;color:var(--text2);background:transparent;border:none;cursor:pointer;font-family:inherit;position:relative;display:flex;align-items:center;justify-content:center;gap:5px}
+.inv-tab.on{color:var(--orange);font-weight:800}
+.inv-tab.on::after{content:'';position:absolute;bottom:-1.5px;left:0;right:0;height:2.5px;background:var(--orange);border-radius:2px}
+.inv-tab-badge{font-size:10px;font-weight:800;border-radius:99px;padding:1px 6px;line-height:1.4}
+.inv-tab-badge.blue{background:#dbeafe;color:#1d4ed8}
+.inv-tab-badge.green{background:#dcfce7;color:#16a34a}
 .inv-card{background:var(--bg);border:.5px solid var(--border);border-radius:var(--rl);padding:14px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;border-left-width:4px}
 .inv-card:active{background:var(--bg2)}
 .inv-card.invoice{border-left-color:#2563eb}
@@ -335,11 +353,9 @@ textarea.fi{min-height:80px;resize:vertical}
 .inv-totals-line{display:flex;justify-content:space-between;gap:24px;padding:4px 0;font-size:13px;color:#555;border-bottom:1px solid #f0f0f0}
 .inv-totals-line:last-child{border-bottom:none;border-top:1px solid #ddd;margin-top:4px;padding-top:8px;font-size:15px;font-weight:800}
 .inv-totals-line:last-child .inv-tval{color:#F5A623;font-size:17px;font-weight:900}
-.inv-payment-box{margin:0 32px 16px;border:1.5px solid #d6e8f7;border-radius:8px;background:#f0f7ff;padding:10px 14px;display:flex;align-items:flex-start;gap:10px}
-.inv-payment-box-icon{font-size:18px;line-height:1;flex-shrink:0;margin-top:1px}
-.inv-payment-box-body{}
-.inv-payment-box-lbl{font-size:9px;font-weight:800;color:#2563eb;text-transform:uppercase;letter-spacing:.07em;margin-bottom:3px}
-.inv-payment-box-val{font-size:11px;color:#1e3a5f;font-weight:500;line-height:1.5}
+.inv-payment-box{margin:0 32px 16px;border:1.5px solid #d6e8f7;border-radius:999px;background:#f0f7ff;padding:9px 14px;display:flex;align-items:center;gap:10px;min-width:0}
+.inv-payment-box-lbl{font-size:10px;font-weight:800;color:#2563eb;text-transform:uppercase;letter-spacing:.07em;flex-shrink:0}
+.inv-payment-box-val{font-size:11px;color:#1e3a5f;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;flex:1}
 .inv-footer{padding:14px 32px;border-top:1px solid #eee;display:flex;justify-content:flex-end}
 .inv-footer-terms{text-align:right}
 .inv-footer-terms .inv-tc-lbl{font-size:9px;font-weight:800;color:#6b9fd4;text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:2px}
@@ -486,12 +502,28 @@ textarea.fi{min-height:80px;resize:vertical}
 <div class="view" id="view-invlist">
   <div class="mhdr">
     <img class="mhdr-logo" src="https://nolasolarenergy.com/wp-content/uploads/2022/06/logotest.png" onerror="this.style.display='none'" alt="Nola Solar"/>
-        <div class="mhdr-r">
-      <button class="ibtn add" onclick="showInvForm(null)">+</button>
+    <div class="mhdr-r">
+      <button class="ibtn add" id="inv-add-btn" onclick="invAddNew()">+</button>
     </div>
   </div>
-  <div class="subbar"><span id="inv-hdrsub">Invoices</span><button onclick="loadInvoices()">Sync</button></div>
-  <div class="clist" id="inv-clist"><div class="empty">No invoices or receipts yet.<br><br>Tap + to create your first document.</div></div>
+  <div class="inv-summary-row">
+    <div class="inv-summary-card pending">
+      <div class="inv-summary-lbl">Pending</div>
+      <div class="inv-summary-amt" id="inv-sum-pending">$0.00</div>
+      <div class="inv-summary-sub" id="inv-sum-pending-sub">0 invoices</div>
+    </div>
+    <div class="inv-summary-card collected">
+      <div class="inv-summary-lbl">Collected</div>
+      <div class="inv-summary-amt" id="inv-sum-collected">$0.00</div>
+      <div class="inv-summary-sub" id="inv-sum-collected-sub">0 receipts</div>
+    </div>
+  </div>
+  <div class="inv-tabs">
+    <button class="inv-tab on" id="invtab-invoices" onclick="setInvTab('invoices')">Invoices <span class="inv-tab-badge blue" id="invbadge-invoices">0</span></button>
+    <button class="inv-tab" id="invtab-receipts" onclick="setInvTab('receipts')">Receipts <span class="inv-tab-badge green" id="invbadge-receipts">0</span></button>
+    <button class="inv-tab" id="invtab-all" onclick="setInvTab('all')">All</button>
+  </div>
+  <div class="clist" id="inv-clist"><div class="empty">No documents yet.<br><br>Tap + to create your first document.</div></div>
   <div class="tabs">
     <button class="tab" onclick="switchTab('contacts',this)"><span class="ticon">👥</span>Customers</button>
     <button class="tab on" onclick="switchTab('invoices',this)"><span class="ticon">🧾</span>Invoices</button>
@@ -1503,9 +1535,11 @@ function buildInvHTML(inv, logoSrc){
   const taxRate=Number.isFinite(parseFloat(inv.taxRate))?parseFloat(inv.taxRate):10;
   const issueDate=formatInvDate(inv.date);
   const validUntil=formatInvDate(inv.validUntil);
-  const notesText=formatInvText(receiptMode
-    ? (inv.notes||'Thank you for choosing Nola Solar Energy.\nWe appreciate your business.')
-    : (inv.notes||'Pricing is based on the scope of work listed below.'));
+  const notesText=(receiptMode
+    ? (inv.notes||'Thank you for choosing Nola Solar Energy. We appreciate your business.')
+    : (inv.notes||'Pricing is based on the scope of work listed below.'))
+    .replace(/\s+/g,' ')
+    .trim();
   const termsText=formatInvText(receiptMode
     ? `Paid by ${inv.payment||'Check'}`
     : (inv.paymentTerms||'Payment due per agreed terms.'));
@@ -1557,7 +1591,7 @@ function buildInvHTML(inv, logoSrc){
     </div>
     <div class="inv-bottom">
       <div class="inv-notes">
-        ${notesText?`<div class="inv-payment-box"><span class="inv-payment-box-icon">💳</span><div class="inv-payment-box-body"><div class="inv-payment-box-lbl">Notes</div><div class="inv-payment-box-val">${notesText}</div></div></div>`:''}
+        ${notesText?`<div class="inv-payment-box"><span class="inv-payment-box-lbl">Notes</span><span class="inv-payment-box-val">${notesText}</span></div>`:''}
       </div>
       <div class="inv-totals-block">
         <div class="inv-totals-line"><span>Subtotal</span><span class="inv-tval">$${subtotal.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}</span></div>
@@ -1681,21 +1715,45 @@ async function saveInvoiceFinal(){
   }catch(e){toast('Error: '+e.message,4000);}
 }
 
+let invListTab='invoices';
+function setInvTab(tab){
+  invListTab=tab;
+  ['invoices','receipts','all'].forEach(t=>{
+    document.getElementById('invtab-'+t)?.classList.toggle('on',t===tab);
+  });
+  renderInvList();
+}
+function invAddNew(){
+  if(invListTab==='receipts'){
+    showInvForm(null);
+    setTimeout(()=>{document.getElementById('inv-kind').value='receipt';syncInvDocumentType();},50);
+  } else {
+    showInvForm(null);
+  }
+}
 function renderInvList(){
   const el=document.getElementById('inv-clist');
   const parseInvNum=n=>{const p=String(n||'').split('-');return p.length===2?parseInt(p[0])*10000+(parseInt(p[1])||0):(parseInt(n)||0);};
   const all=Object.values(invoices).sort((a,b)=>(parseInvNum(b.number)-parseInvNum(a.number))||new Date(b.updatedAt||b.createdAt||0)-new Date(a.updatedAt||a.createdAt||0));
-  if(!all.length){
-    document.getElementById('inv-hdrsub').textContent='0 documents';
-    el.innerHTML='<div class="empty">No invoices or receipts yet.<br><br>Tap + to create your first document.</div>';
+  // Summary cards
+  const invList=all.filter(i=>getInvoiceKind(i)==='invoice');
+  const recList=all.filter(i=>getInvoiceKind(i)==='receipt');
+  const pendingAmt=invList.filter(i=>getEffectiveInvoiceStatus(i)!=='paid').reduce((s,i)=>s+(parseFloat(i.total)||0),0);
+  const collectedAmt=recList.reduce((s,i)=>s+(parseFloat(i.total)||0),0);
+  const fmt=n=>n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+  document.getElementById('inv-sum-pending').textContent='$'+fmt(pendingAmt);
+  document.getElementById('inv-sum-pending-sub').textContent=invList.length+' invoice'+(invList.length!==1?'s':'');
+  document.getElementById('inv-sum-collected').textContent='$'+fmt(collectedAmt);
+  document.getElementById('inv-sum-collected-sub').textContent=recList.length+' receipt'+(recList.length!==1?'s':'');
+  document.getElementById('invbadge-invoices').textContent=invList.length;
+  document.getElementById('invbadge-receipts').textContent=recList.length;
+  // Filter by tab
+  const filtered=invListTab==='invoices'?invList:invListTab==='receipts'?recList:all;
+  if(!filtered.length){
+    el.innerHTML='<div class="empty">No '+(invListTab==='all'?'documents':invListTab)+' yet.<br><br>Tap + to create one.</div>';
     return;
   }
-  const total=all.reduce((sum,inv)=>{
-    const itemTotal=(inv.lineItems||[]).reduce((itemSum,li)=>itemSum+(parseFloat(li.amount)||0),0);
-    return sum+(Number.isFinite(parseFloat(inv.total))?parseFloat(inv.total):(itemTotal+(parseFloat(inv.taxAmt)||0)));
-  },0);
-  document.getElementById('inv-hdrsub').textContent=all.length+' documents • $'+total.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})+' total';
-  el.innerHTML=all.map(inv=>{
+  el.innerHTML=filtered.map(inv=>{
     const t=Number.isFinite(parseFloat(inv.total))?parseFloat(inv.total):((inv.lineItems||[]).reduce((s,i)=>s+(parseFloat(i.amount)||0),0)+(parseFloat(inv.taxAmt)||0));
     const kind=getInvoiceKind(inv);
     const status=getEffectiveInvoiceStatus(inv);
@@ -1712,7 +1770,7 @@ function renderInvList(){
         <div class="invdate">${meta||scopePreview||fallbackMeta}</div>
       </div>
       <div class="inv-card-r">
-        <div class="invamt">$${t.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}</div>
+        <div class="invamt">$${fmt(t)}</div>
         ${kind==='receipt'
           ? `<div class="inv-status paid" style="margin-top:0">Paid</div>`
           : `<select class="inv-status-edit ${status}" onclick="event.stopPropagation()" onchange="event.stopPropagation();updateInvoiceStatus('${inv.id}',this.value)">
@@ -1839,6 +1897,9 @@ function printInvoice(){
     .inv-items-table td:not(:first-child){text-align:center;color:#555}
     .inv-items-table td:last-child{text-align:right;font-weight:600;color:#333}
     .inv-items-table tbody tr:last-child td{border-bottom:none}
+    .inv-payment-box{margin:0 40px 16px;border:1.5px solid #d6e8f7;border-radius:999px;background:#f0f7ff;padding:9px 14px;display:flex;align-items:center;gap:10px;min-width:0}
+    .inv-payment-box-lbl{font-size:10px;font-weight:800;color:#2563eb;text-transform:uppercase;letter-spacing:.07em;flex-shrink:0}
+    .inv-payment-box-val{font-size:11px;color:#1e3a5f;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;flex:1}
     .inv-bottom{padding:14px 40px 28px;display:flex;justify-content:space-between;align-items:flex-start;gap:20px}
     .inv-notes-lbl{font-size:10px;font-weight:800;color:#6b9fd4;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}
     .inv-notes-text{font-size:12px;color:#555;line-height:1.75}
