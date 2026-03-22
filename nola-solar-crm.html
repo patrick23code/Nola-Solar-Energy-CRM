@@ -302,7 +302,7 @@ textarea.fi{min-height:80px;resize:vertical}
 .inv-pg-header-left .inv-from span{font-weight:400;color:#555;display:block}
 .inv-pg-header-right{text-align:right}
 .inv-pg-header-right .inv-word{font-size:28px;font-weight:900;color:#1a3a6e;letter-spacing:.04em;line-height:1;margin-bottom:6px}
-.inv-pg-header-right .inv-number{font-size:14px;font-weight:600;color:#555;margin-bottom:14px}
+.inv-pg-header-right .inv-number{display:inline-block;font-size:15px;font-weight:800;color:#1a3a6e;letter-spacing:.05em;background:#f4f6f9;padding:6px 12px;border-radius:999px;margin-bottom:14px}
 .inv-pg-header-right .inv-dates{display:flex;flex-direction:column;gap:4px;align-items:flex-end}
 .inv-pg-header-right .inv-date-row{display:flex;gap:12px;font-size:12px}
 .inv-pg-header-right .inv-date-lbl{color:#888;text-align:right;min-width:70px}
@@ -314,8 +314,8 @@ textarea.fi{min-height:80px;resize:vertical}
 .inv-billto-detail{font-size:12px;color:#555;line-height:1.6}
 .inv-project-wrap{padding:0 32px 14px}
 .inv-project-lbl{font-size:10px;font-weight:800;color:#6b9fd4;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}
-.inv-project-title{font-size:15px;font-weight:700;color:#111;margin-bottom:6px}
-.inv-project-scope{font-size:12px;color:#555;line-height:1.7;white-space:normal}
+.inv-project-title{font-size:14px;font-weight:700;color:#1f2937;margin-bottom:6px}
+.inv-project-scope{font-size:11px;color:#6b7280;line-height:1.8;white-space:normal}
 .inv-items-wrap{padding:0 32px 12px;position:relative}
 .inv-paid-watermark{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-35deg);font-size:52px;font-weight:900;color:rgba(100,190,160,.18);letter-spacing:.15em;pointer-events:none;user-select:none;border:5px solid rgba(100,190,160,.18);padding:6px 18px;border-radius:8px;white-space:nowrap}
 .inv-items-table{width:100%;border-collapse:collapse;border:1px solid #e8e8e8;border-radius:8px;overflow:hidden}
@@ -330,15 +330,15 @@ textarea.fi{min-height:80px;resize:vertical}
 .inv-bottom{padding:12px 32px 24px;display:flex;justify-content:space-between;align-items:flex-start;gap:16px}
 .inv-notes{flex:1}
 .inv-notes-lbl{font-size:10px;font-weight:800;color:#6b9fd4;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}
-.inv-notes-text{font-size:12px;color:#555;line-height:1.6}
+.inv-notes-text{font-size:12px;color:#555;line-height:1.75}
 .inv-totals-block{min-width:200px}
 .inv-totals-line{display:flex;justify-content:space-between;gap:24px;padding:4px 0;font-size:13px;color:#555;border-bottom:1px solid #f0f0f0}
 .inv-totals-line:last-child{border-bottom:none;border-top:1px solid #ddd;margin-top:4px;padding-top:8px;font-size:15px;font-weight:800}
 .inv-totals-line:last-child .inv-tval{color:#F5A623;font-size:17px;font-weight:900}
 .inv-footer{padding:14px 32px;border-top:1px solid #eee;display:flex;justify-content:flex-end}
 .inv-footer-terms{text-align:right}
-.inv-footer-terms .inv-tc-lbl{font-size:10px;font-weight:800;color:#6b9fd4;text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:3px}
-.inv-footer-terms .inv-tc-val{font-size:12px;color:#333;font-weight:600}
+.inv-footer-terms .inv-tc-lbl{font-size:9px;font-weight:800;color:#6b9fd4;text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:2px}
+.inv-footer-terms .inv-tc-val{font-size:10px;color:#555;font-weight:500;line-height:1.4}
 .inv-action-bar{padding:14px 16px;display:flex;gap:10px;background:var(--bg);border-top:.5px solid var(--border);flex-shrink:0}
 .inv-action-bar button{flex:1;padding:13px;border-radius:var(--r);font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;border:none}
 .inv-print-btn{background:var(--orange);color:#fff}
@@ -755,14 +755,13 @@ textarea.fi{min-height:80px;resize:vertical}
             <option value="draft">Draft</option>
             <option value="sent">Sent</option>
             <option value="approved">Approved</option>
-            <option value="paid">Paid</option>
             <option value="rejected">Rejected</option>
           </select>
         </div>
         <div class="fg">
           <label>Payment Terms</label>
           <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px">
-            <button class="fpill" onclick="setPaymentTerm(this,'50% deposit due upfront, remaining balance due on completion.')">50% Deposit</button>
+            <button class="fpill" onclick="setPaymentTerm(this,'50% deposit due before work begins. Remaining balance due upon completion.')">50% Deposit</button>
             <button class="fpill" onclick="setPaymentTerm(this,'Payment due upon receipt.')">Due on Receipt</button>
           </div>
           <input class="fi" id="inv-payment-terms" type="text" placeholder="Or type custom terms..."/>
@@ -955,7 +954,7 @@ function getEffectiveInvoiceStatus(inv){
 function getInvoiceStatusOptions(kind){
   return kind==='receipt'
     ? ['paid']
-    : ['draft','sent','approved','paid','rejected'];
+    : ['draft','sent','approved','rejected'];
 }
 function getInvoiceWatermark(inv){
   const status=getEffectiveInvoiceStatus(inv);
@@ -1780,7 +1779,7 @@ function printInvoice(){
     .inv-pg-header-left .inv-from span{font-weight:400;color:#555;display:block}
     .inv-pg-header-right{text-align:right}
     .inv-pg-header-right .inv-word{font-size:28px;font-weight:900;color:#1a3a6e;letter-spacing:.04em;line-height:1;margin-bottom:6px}
-    .inv-pg-header-right .inv-number{font-size:14px;font-weight:600;color:#555;margin-bottom:14px}
+    .inv-pg-header-right .inv-number{display:inline-block;font-size:15px;font-weight:800;color:#1a3a6e;letter-spacing:.05em;background:#f4f6f9;padding:6px 12px;border-radius:999px;margin-bottom:14px}
     .inv-date-row{display:flex;gap:12px;justify-content:flex-end;font-size:12px;margin-bottom:3px}
     .inv-date-lbl{color:#888;min-width:76px;text-align:right}
     .inv-date-val{color:#1a3a6e;font-weight:700}
@@ -1789,6 +1788,10 @@ function printInvoice(){
     .inv-billto-lbl{font-size:10px;font-weight:800;color:#6b9fd4;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}
     .inv-billto-name{font-size:16px;font-weight:700;color:#111;margin-bottom:4px}
     .inv-billto-detail{font-size:12px;color:#555;line-height:1.6}
+    .inv-project-wrap{padding:0 40px 16px}
+    .inv-project-lbl{font-size:10px;font-weight:800;color:#6b9fd4;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}
+    .inv-project-title{font-size:14px;font-weight:700;color:#1f2937;margin-bottom:6px}
+    .inv-project-scope{font-size:11px;color:#6b7280;line-height:1.8;white-space:normal}
     .inv-items-wrap{padding:0 40px 14px;position:relative}
     .inv-paid-watermark{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-35deg);font-size:60px;font-weight:900;color:rgba(100,190,160,.16);letter-spacing:.15em;pointer-events:none;border:6px solid rgba(100,190,160,.16);padding:8px 22px;border-radius:10px;white-space:nowrap}
     .inv-items-table{width:100%;border-collapse:collapse;border:1px solid #e8e8e8;border-radius:8px;overflow:hidden}
@@ -1802,7 +1805,7 @@ function printInvoice(){
     .inv-items-table tbody tr:last-child td{border-bottom:none}
     .inv-bottom{padding:14px 40px 28px;display:flex;justify-content:space-between;align-items:flex-start;gap:20px}
     .inv-notes-lbl{font-size:10px;font-weight:800;color:#6b9fd4;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}
-    .inv-notes-text{font-size:12px;color:#555;line-height:1.6}
+    .inv-notes-text{font-size:12px;color:#555;line-height:1.75}
     .inv-totals-block{min-width:210px}
     .inv-totals-line{display:flex;justify-content:space-between;gap:28px;padding:5px 0;font-size:13px;color:#555;border-bottom:1px solid #f0f0f0}
     .inv-totals-line:last-child{border-bottom:none;border-top:1px solid #ddd;margin-top:4px;padding-top:9px;font-size:16px;font-weight:800}
