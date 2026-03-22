@@ -1593,7 +1593,7 @@ function saveInvoice(){
   syncPdfActionButton();
 }
 
-async function setPaymentTerm(btn,text){
+function setPaymentTerm(btn,text){
   document.getElementById('inv-payment-terms').value=text;
   btn.closest('div').querySelectorAll('.fpill').forEach(b=>b.classList.remove('on'));
   btn.classList.add('on');
@@ -1692,15 +1692,57 @@ function previewSavedInv(id){
   // Update header for saved invoice view
   document.querySelector('#view-invpreview .shdr .bbtn').textContent='← Back';
   document.querySelector('#view-invpreview .shdr .bbtn').onclick=()=>showV('view-invlist');
-  document.querySelector('#view-invpreview .shdr .bbtn+span+button').textContent='Delete';
-  document.querySelector('#view-invpreview .shdr .bbtn+span+button').onclick=()=>deleteInvoice(id);
-  document.querySelector('#view-invpreview .shdr .bbtn+span+button').style.background='var(--red-bg)';
-  document.querySelector('#view-invpreview .shdr .bbtn+span+button').style.color='var(--red-txt)';
-  document.querySelector('#view-invpreview .shdr .bbtn+span+button').style.border='1.5px solid var(--red-txt)';
+  const actionBtn=document.querySelector('#view-invpreview .shdr .bbtn+span+button');
+  actionBtn.textContent='Edit';
+  actionBtn.onclick=()=>editInvoice(id);
+  actionBtn.style.background='';actionBtn.style.color='';actionBtn.style.border='';
   showV('view-invpreview');
   syncPdfActionButton();
 }
 
+function editInvoice(id){
+  const inv=invoices[id];if(!inv)return;
+  invEditId=id;
+  const kind=getInvoiceKind(inv);
+  const invoiceMode=kind==='invoice';
+  document.getElementById('invf-title').textContent=invoiceMode?'Edit Invoice':'Edit Receipt';
+  document.getElementById('inv-kind').value=kind;
+  document.getElementById('inv-num').value=inv.number||'';
+  document.getElementById('inv-date').value=inv.date||'';
+  document.getElementById('inv-valid-until').value=inv.validUntil||'';
+  document.getElementById('inv-status').value=inv.status||'draft';
+  document.getElementById('inv-project').value=inv.projectName||'';
+  document.getElementById('inv-scope').value=inv.scope||'';
+  document.getElementById('inv-notes').value=inv.notes||'';
+  document.getElementById('inv-payment-terms').value=inv.paymentTerms||'';
+  document.getElementById('inv-payment-method').value=inv.payment||'Check';
+  document.getElementById('inv-tax-on').checked=inv.taxOn||false;
+  document.getElementById('inv-tax-rate').value=inv.taxRate||10;
+  // Payment term pills
+  document.querySelectorAll('#invoice-only-meta .fpill').forEach(b=>{
+    b.classList.toggle('on',b.getAttribute('onclick')?.includes(inv.paymentTerms||'__none__'));
+  });
+  // Client
+  invSelectedContact=inv.contactId?contacts[inv.contactId]||null:null;
+  invLockedContactId=null;
+  if(invSelectedContact){
+    document.getElementById('contact-search').value=fullName(invSelectedContact);
+    switchPickerTab('crm');
+  } else {
+    document.getElementById('contact-search').value='';
+    document.getElementById('inv-client-name').value=inv.clientName||'';
+    document.getElementById('inv-client-addr').value=inv.clientAddress||'';
+    switchPickerTab(inv.contactId?'crm':'manual');
+  }
+  // Line items
+  lineItems=(inv.lineItems||[{desc:'',qty:1,price:''}]).map(i=>({desc:i.desc||'',qty:i.qty||1,price:i.price||''}));
+  syncInvDocumentType();
+  renderLineItems();
+  renderInvBillToMode();
+  // Save button → update
+  document.getElementById('inv-savebtn').onclick=saveInvoice;
+  showV('view-invform');
+}
 async function deleteInvoice(id){
   if(!confirm('Delete this document?'))return;
   try{
