@@ -1435,9 +1435,9 @@ function calcTotal(){
 
 function getInvClientInfo(){
   if(invPickerTab==='crm'&&invSelectedContact){
-    return{name:fullName(invSelectedContact),address:invSelectedContact.address||''};
+    return{name:fullName(invSelectedContact),address:invSelectedContact.address||'',phone:invSelectedContact.phone||'',email:invSelectedContact.email||''};
   }
-  return{name:document.getElementById('inv-client-name').value.trim(),address:document.getElementById('inv-client-addr').value.trim()};
+  return{name:document.getElementById('inv-client-name').value.trim(),address:document.getElementById('inv-client-addr').value.trim(),phone:'',email:''};
 }
 
 const DEFAULT_LOGO_DATA_URL='data:image/png;base64,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...';
@@ -1513,7 +1513,9 @@ function buildInvHTML(inv, logoSrc){
     <div class="inv-billto">
       <div class="inv-billto-lbl">Bill To</div>
       <div class="inv-billto-name">${inv.clientName||''}</div>
-      <div class="inv-billto-detail">${inv.clientAddress||''}</div>
+      ${inv.clientAddress?`<div class="inv-billto-detail">${inv.clientAddress}</div>`:''}
+      ${inv.clientPhone?`<div class="inv-billto-detail">${inv.clientPhone}</div>`:''}
+      ${inv.clientEmail?`<div class="inv-billto-detail">${inv.clientEmail}</div>`:''}
     </div>
     ${!receiptMode&&(inv.projectName||inv.scope)?`<div class="inv-project-wrap">
       <div class="inv-project-lbl">Project / Scope</div>
@@ -1583,7 +1585,7 @@ function saveInvoice(){
     date:document.getElementById('inv-date').value,
     validUntil:invoiceMode?document.getElementById('inv-valid-until').value:'',
     projectName,scope,notes,paymentTerms,
-    clientName:client.name,clientAddress:client.address,
+    clientName:client.name,clientAddress:client.address,clientPhone:client.phone||'',clientEmail:client.email||'',
     contactId:invSelectedContact?.id||null,
     lineItems:items,
     payment,
@@ -1633,7 +1635,7 @@ async function saveInvoiceDraft(){
     scope:invoiceMode?document.getElementById('inv-scope').value.trim():'',
     notes:invoiceMode?document.getElementById('inv-notes').value.trim():'',
     paymentTerms:invoiceMode?document.getElementById('inv-payment-terms').value.trim():'',
-    clientName:client.name,clientAddress:client.address,
+    clientName:client.name,clientAddress:client.address,clientPhone:client.phone||'',clientEmail:client.email||'',
     contactId:invSelectedContact?.id||null,
     lineItems:items,
     payment:invoiceMode?'':document.getElementById('inv-payment-method').value,
