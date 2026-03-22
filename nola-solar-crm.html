@@ -718,7 +718,7 @@ textarea.fi{min-height:80px;resize:vertical}
     </div>
     <div class="r2">
       <div class="fg"><label id="inv-date-label">Issue Date</label><input class="fi" id="inv-date" type="date"/></div>
-      <div class="fg" id="inv-valid-wrap"><label>Valid Until</label><input class="fi" id="inv-valid-until" type="date"/></div>
+      <div class="fg" id="inv-valid-wrap"><label>Due Date</label><input class="fi" id="inv-valid-until" type="date"/></div>
     </div>
     <div id="invoice-only-fields">
       <div class="fg"><label>Project / Job Title</label><input class="fi" id="inv-project" type="text" placeholder="Roof repair, panel cleaning, inverter replacement..."/></div>
@@ -1499,7 +1499,7 @@ function buildInvHTML(inv, logoSrc){
         <div class="inv-number">#${inv.number||'--'}</div>
         <div class="inv-dates">
           <div class="inv-date-row"><span class="inv-date-lbl">${receiptMode?'Date':'Issue Date'}:</span><span class="inv-date-val">${issueDate}</span></div>
-          ${!receiptMode&&validUntil?`<div class="inv-date-row"><span class="inv-date-lbl">Valid Until:</span><span class="inv-date-val">${validUntil}</span></div>`:''}
+          ${!receiptMode&&validUntil?`<div class="inv-date-row"><span class="inv-date-lbl">Due Date:</span><span class="inv-date-val">${validUntil}</span></div>`:''}
         </div>
       </div>
     </div>
