@@ -761,7 +761,11 @@ textarea.fi{min-height:80px;resize:vertical}
         </div>
         <div class="fg">
           <label>Payment Terms</label>
-          <input class="fi" id="inv-payment-terms" type="text" placeholder="50% deposit, balance on completion"/>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px">
+            <button class="fpill" onclick="setPaymentTerm(this,'50% deposit due upfront, remaining balance due on completion.')">50% Deposit</button>
+            <button class="fpill" onclick="setPaymentTerm(this,'Payment due upon receipt.')">Due on Receipt</button>
+          </div>
+          <input class="fi" id="inv-payment-terms" type="text" placeholder="Or type custom terms..."/>
         </div>
       </div>
       <div class="fg"><label>Notes / Terms</label><textarea class="fi" id="inv-notes" placeholder="Warranty details, timeline, exclusions, approval notes..."></textarea></div>
@@ -1275,6 +1279,7 @@ function showInvForm(contactId){
   document.getElementById('inv-status').value='draft';
   document.getElementById('inv-payment-method').value='Check';
   document.getElementById('inv-payment-terms').value='';
+  document.querySelectorAll('#invoice-only-meta .fpill').forEach(b=>b.classList.remove('on'));
   document.getElementById('inv-project').value='';
   document.getElementById('inv-scope').value='';
   document.getElementById('inv-notes').value='';
@@ -1588,6 +1593,11 @@ function saveInvoice(){
   syncPdfActionButton();
 }
 
+async function setPaymentTerm(btn,text){
+  document.getElementById('inv-payment-terms').value=text;
+  btn.closest('div').querySelectorAll('.fpill').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+}
 async function saveInvoiceDraft(){
   const client=getInvClientInfo();
   if(!client.name){toast('Please select or enter a client name');return;}
