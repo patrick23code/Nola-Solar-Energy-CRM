@@ -262,6 +262,8 @@ textarea.fi{min-height:80px;resize:vertical}
 .inv-status.paid{background:#f0fdf4;color:#166534}
 .inv-status-edit{min-width:110px;padding:6px 10px;border:1px solid var(--border2);border-radius:999px;background:var(--bg2);color:var(--text);font-size:11px;font-weight:700;font-family:inherit;cursor:pointer;text-align:left}
 .inv-status-edit:focus{outline:none;border-color:var(--orange)}
+.inv-next-action{max-width:150px;font-size:11px;line-height:1.35;color:var(--text2);text-align:right}
+.inv-next-action strong{color:var(--text);font-weight:700}
 
 /* ── INVOICE FORM ── */
 .inv-section-title{font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}
@@ -813,6 +815,7 @@ const STATUS_LABEL={new:'New',followup:'Follow Up',pending:'Pending',inprocess:'
 const STATUS_ICON={new:'✦',followup:'↺',pending:'⏳',inprocess:'⚡',completed:'✔'};
 const INV_KIND_LABEL={invoice:'Invoice',receipt:'Receipt'};
 const INV_STATUS_LABEL={draft:'Draft',sent:'Sent',approved:'Approved',paid:'Paid',rejected:'Rejected'};
+const INV_NEXT_ACTION_LABEL={draft:'Needs review',sent:'Waiting customer approval',approved:'Ready to collect payment',paid:'Completed',rejected:'Needs revision'};
 const HARDCODED_CFG={apiKey:'AIzaSyBdOfax4NY7PhyyFhpy7ItivkUID0ksMyo',databaseURL:'https://nolacrm-85b09-default-rtdb.firebaseio.com',projectId:'nolacrm-85b09',appId:'1:107492211574:web:7ed2a2dd40d8be4707d857',authDomain:'nolacrm-85b09.firebaseapp.com'};
 
 let db=null,contacts={},photos={},invoices={},selCat='all',selId=null,editId=null,fCat='residential';
@@ -932,6 +935,10 @@ function getInvoiceLabel(invOrKind){
   return INV_KIND_LABEL[kind]||'Document';
 }
 function getInvoiceStatusLabel(status){return INV_STATUS_LABEL[status]||'Draft';}
+function getInvoiceNextAction(inv){
+  const status=getEffectiveInvoiceStatus(inv);
+  return INV_NEXT_ACTION_LABEL[status]||(getInvoiceKind(inv)==='receipt'?'Completed':'Review status');
+}
 function getEffectiveInvoiceStatus(inv){
   return getInvoiceKind(inv)==='receipt'?'paid':(inv?.status||'draft');
 }
@@ -1274,6 +1281,7 @@ function showInvForm(contactId){
   if(contactId&&contacts[contactId]){
     invSelectedContact=contacts[contactId];
     invLockedContactId=contactId;
+    document.getElementById('contact-search').value=fullName(invSelectedContact);
     document.getElementById('inv-project').value=invSelectedContact.projectName||(invSelectedContact.jobTypes||[]).join(', ');
     document.getElementById('inv-scope').value=invSelectedContact.notes||'';
   }
@@ -1333,9 +1341,11 @@ function switchPickerTab(tab){
 
 function renderContactPicker(){
   const s=(document.getElementById('contact-search').value||'').toLowerCase();
-  const all=Object.values(contacts).sort((a,b)=>fullName(a).localeCompare(fullName(b)));
-  const fl=s?all.filter(c=>fullName(c).toLowerCase().includes(s)||(c.address||'').toLowerCase().includes(s)):all;
   const el=document.getElementById('contact-picker-list');
+  if(!s){el.innerHTML='';el.style.display='none';return;}
+  el.style.display='';
+  const all=Object.values(contacts).sort((a,b)=>fullName(a).localeCompare(fullName(b)));
+  const fl=all.filter(c=>fullName(c).toLowerCase().includes(s)||(c.address||'').toLowerCase().includes(s));
   if(!fl.length){el.innerHTML='<div style="padding:12px;text-align:center;font-size:13px;color:var(--text2)">No contacts found</div>';return;}
   el.innerHTML=fl.map(c=>`
     <div class="cp-item ${invSelectedContact?.id===c.id?'selected':''}" onclick="selectInvContact('${c.id}')">
@@ -1350,6 +1360,9 @@ function selectInvContact(id){
   if(invLockedContactId&&invSelectedContact&&invSelectedContact.id===invLockedContactId)return;
   invSelectedContact=contacts[id];
   if(invSelectedContact){
+    document.getElementById('contact-search').value=fullName(invSelectedContact);
+    const el=document.getElementById('contact-picker-list');
+    el.innerHTML='';el.style.display='none';
     if(!document.getElementById('inv-project').value.trim()){
       document.getElementById('inv-project').value=invSelectedContact.projectName||(invSelectedContact.jobTypes||[]).join(', ');
     }
@@ -1357,7 +1370,6 @@ function selectInvContact(id){
       document.getElementById('inv-scope').value=invSelectedContact.notes;
     }
   }
-  renderContactPicker();
 }
 
 function addLineItem(){lineItems.push({desc:'',qty:1,price:''});renderLineItems();}
@@ -1600,6 +1612,7 @@ function renderInvList(){
     const scopePreview=scopeRaw.length>82?scopeRaw.slice(0,79)+'...':scopeRaw;
     const fallbackMeta=kind==='receipt'?'Open to view payment details':'No project details added';
     const statusOptions=getInvoiceStatusOptions(kind).map(option=>`<option value="${option}" ${status===option?'selected':''}>${getInvoiceStatusLabel(option)}</option>`).join('');
+    const nextAction=kind==='invoice'?getInvoiceNextAction(inv):'';
     return`<div class="inv-card ${kind}" onclick="previewSavedInv('${inv.id}')">
       <div class="inv-card-l">
         <div class="invnum">${getInvoiceLabel(inv)} #${inv.number||'--'}</div>
@@ -1613,6 +1626,7 @@ function renderInvList(){
           : `<select class="inv-status-edit ${status}" onclick="event.stopPropagation()" onchange="event.stopPropagation();updateInvoiceStatus('${inv.id}',this.value)">
               ${statusOptions}
             </select>`}
+        ${nextAction?`<div class="inv-next-action"><strong>Next:</strong> ${nextAction}</div>`:''}
       </div>
     </div>`;
   }).join('');
