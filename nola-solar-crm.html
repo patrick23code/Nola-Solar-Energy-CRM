@@ -714,7 +714,7 @@ textarea.fi{min-height:80px;resize:vertical}
           <option value="receipt">Receipt</option>
         </select>
       </div>
-      <div class="fg"><label id="inv-num-label">Invoice #</label><input class="fi" id="inv-num" type="number" placeholder="29"/></div>
+      <div class="fg"><label id="inv-num-label">Invoice #</label><input class="fi" id="inv-num" type="text" placeholder="2026-001"/></div>
     </div>
     <div class="r2">
       <div class="fg"><label id="inv-date-label">Issue Date</label><input class="fi" id="inv-date" type="date"/></div>
@@ -1296,10 +1296,16 @@ function showInvForm(contactId){
     document.getElementById('inv-scope').value=invSelectedContact.notes||'';
   }
   invPickerTab='crm';
-  // Set next invoice number
-  const nums=Object.values(invoices).map(i=>parseInt(i.number)||0);
-  const nextNum=nums.length?Math.max(...nums)+1:1;
-  document.getElementById('inv-num').value=nextNum;
+  // Set next invoice number (YYYY-NNN format)
+  const year=new Date().getFullYear();
+  const prefix=year+'-';
+  const seqs=Object.values(invoices).map(i=>{
+    const n=String(i.number||'');
+    if(n.startsWith(prefix))return parseInt(n.slice(prefix.length))||0;
+    return parseInt(n)||0;
+  });
+  const nextSeq=(seqs.length?Math.max(...seqs):0)+1;
+  document.getElementById('inv-num').value=prefix+String(nextSeq).padStart(3,'0');
   const firstLineDesc=invSelectedContact?.projectName||(invSelectedContact?.jobTypes||[]).join(', ')||'';
   lineItems=[{desc:firstLineDesc,qty:1,price:''}];
   syncInvDocumentType();
@@ -1650,7 +1656,8 @@ async function saveInvoiceFinal(){
 
 function renderInvList(){
   const el=document.getElementById('inv-clist');
-  const all=Object.values(invoices).sort((a,b)=>((parseInt(b.number)||0)-(parseInt(a.number)||0))||new Date(b.updatedAt||b.createdAt||0)-new Date(a.updatedAt||a.createdAt||0));
+  const parseInvNum=n=>{const p=String(n||'').split('-');return p.length===2?parseInt(p[0])*10000+(parseInt(p[1])||0):(parseInt(n)||0);};
+  const all=Object.values(invoices).sort((a,b)=>(parseInvNum(b.number)-parseInvNum(a.number))||new Date(b.updatedAt||b.createdAt||0)-new Date(a.updatedAt||a.createdAt||0));
   if(!all.length){
     document.getElementById('inv-hdrsub').textContent='0 documents';
     el.innerHTML='<div class="empty">No invoices or receipts yet.<br><br>Tap + to create your first document.</div>';
